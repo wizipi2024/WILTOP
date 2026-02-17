@@ -581,7 +581,8 @@ root.mainloop()
         NUNCA abre navegador direto - sempre traz resposta ou pergunta ao usuario."""
         # Padroes de perguntas que PRECISAM de busca web
         question_patterns = [
-            r'(?:quais|qual)\s+(?:as|a|o|os)\s+(?:ultimas?\s+)?(?:noticias|novidades|manchetes)',
+            r'(?:quais|qual)\s+(?:as|a|o|os)\s+(?:principais?\s+|ultimas?\s+)?(?:noticias|novidades|manchetes)',
+            r'(?:noticias|noticia|novidades|manchetes)',  # Qualquer menção a notícias
             r'(?:como\s+esta|qual)\s+o\s+(?:tempo|clima|previsao)',
             r'(?:me\s+)?(?:fale?|diga|conte|explique?)\s+(?:sobre|a respeito)',
             r'(?:o\s+que\s+(?:e|sao|significa)|quem\s+(?:e|foi|sao))',
@@ -594,6 +595,8 @@ root.mainloop()
             r'(?:cotacao|dolar|euro|bitcoin|bolsa)',
             r'(?:resultado|placar|jogo)\s+(?:de|do|da)',
             r'(?:previsao|temperatura)\s+(?:de|do|da|em|para)',
+            r'(?:o\s+que\s+(?:esta|ta)\s+(?:acontecendo|rolando))',
+            r'(?:pesquis[ae]|busca?r?|procur[ae])\s+(?:sobre|por|no google)',
         ]
 
         is_question = any(re.search(p, msg) for p in question_patterns)
