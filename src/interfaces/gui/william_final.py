@@ -28,25 +28,33 @@ log = get_logger(__name__)
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
-# === CORES FUTURISTAS ===
+# === CORES PROFISSIONAIS (DARK MODE) ===
 COLORS = {
-    "bg_dark": "#0a0a1a",
-    "bg_panel": "#0d1117",
-    "bg_card": "#161b22",
-    "bg_input": "#1a1f2e",
-    "neon_cyan": "#00f5ff",
-    "neon_blue": "#0088ff",
-    "neon_purple": "#b44aff",
-    "neon_green": "#00ff88",
-    "neon_orange": "#ff8800",
-    "neon_red": "#ff3355",
-    "neon_yellow": "#ffee00",
-    "neon_pink": "#ff44aa",
-    "text_primary": "#e6edf3",
-    "text_dim": "#6e7681",
-    "border": "#1a2332",
-    "xp_bar_bg": "#1a1f2e",
-    "xp_bar_fill": "#00f5ff",
+    # Profissional dark (estilo Linear/Vercel)
+    "bg_dark": "#0F1117",  # Slate-900 profissional
+    "bg_panel": "#161921",
+    "bg_card": "#1C1F2B",
+    "bg_input": "#1C1F2B",
+    "accent": "#3B82F6",   # Blue-500
+    "success": "#22C55E",  # Green-500
+    "warning": "#F59E0B",  # Amber-500
+    "error": "#EF4444",    # Red-500
+    "text_primary": "#F1F5F9",  # Slate-100
+    "text_secondary": "#94A3B8",  # Slate-400
+    "border": "#2D3748",
+
+    # Legado (apontar para novas cores)
+    "neon_cyan": "#3B82F6",      # Blue-500
+    "neon_blue": "#3B82F6",
+    "neon_purple": "#A855F7",    # Purple-500
+    "neon_green": "#22C55E",     # Green-500
+    "neon_orange": "#F59E0B",    # Amber-500
+    "neon_red": "#EF4444",       # Red-500
+    "neon_yellow": "#FBBF24",    # Amber-400
+    "neon_pink": "#EC4899",      # Pink-500
+    "text_dim": "#94A3B8",       # Slate-400
+    "xp_bar_bg": "#1C1F2B",
+    "xp_bar_fill": "#3B82F6",    # Blue-500
 }
 
 SYSTEM_PROMPT = """Voce e William, assistente IA PODEROSO com controle TOTAL do PC.
@@ -87,9 +95,9 @@ class WilliamFinal:
 
         # Janela principal
         self.window = ctk.CTk()
-        self.window.title("W I L L I A M  //  NEURAL ENGINE v4")
-        self.window.geometry("1100x850")
-        self.window.minsize(950, 700)
+        self.window.title("WILTOP - Digital Employees System")
+        self.window.geometry("1280x900")
+        self.window.minsize(1024, 700)
         self.window.configure(fg_color=COLORS["bg_dark"])
 
         self._setup_ui()
