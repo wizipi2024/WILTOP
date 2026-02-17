@@ -1,18 +1,18 @@
 {
   "user_preferences": {},
   "learned_commands": {},
-  "interaction_count": 69,
+  "interaction_count": 75,
   "personality": {
     "nome": "William",
     "humor": "confiante",
     "estilo": "direto e eficiente",
     "nivel": 4,
-    "xp": 73,
+    "xp": 79,
     "titulo": "Assistente Capaz",
     "criado_em": "2026-02-17T11:20:34.184859",
     "tracos": [
-      "eficiente",
       "prestativo",
+      "eficiente",
       "objetivo",
       "veterano",
       "descontraido"
@@ -37,9 +37,10 @@
     "web_answer": 6,
     "close_app": 2,
     "list": 2,
-    "ai_generate": 13,
-    "ai_execute": 5,
-    "power": 1
+    "ai_generate": 15,
+    "ai_execute": 6,
+    "power": 1,
+    "skill_web": 1
   },
   "corrections": [],
   "conversation_patterns": {
@@ -112,18 +113,24 @@
       37,
       44,
       7,
-      75
+      75,
+      27,
+      71,
+      148,
+      67,
+      2,
+      55
     ],
-    "informal": 8,
-    "urgente": 2,
+    "informal": 9,
+    "urgente": 3,
     "tecnico": 1
   },
   "topics_discussed": {
     "rede": 6,
-    "arquivos": 9,
+    "arquivos": 10,
     "sistema": 5,
     "programacao": 1,
-    "diversao": 12,
+    "diversao": 13,
     "navegacao": 1
   },
   "time_stats": {
@@ -136,10 +143,10 @@
       "17": 1,
       "18": 1,
       "19": 1,
-      "20": 6
+      "20": 12
     },
     "dias_ativos": {
-      "Tuesday": 69
+      "Tuesday": 75
     }
   },
   "command_aliases": {
@@ -219,25 +226,30 @@
       "crie um jogo de corrida funcional pra controlar com as teclas, de setas",
       "cade o jogo?",
       "crie o game com esses comandos ai",
-      "crie um jogo de truco pra duas pessoas, crie completo e funcional e bonito!"
+      "crie um jogo de truco pra duas pessoas, crie completo e funcional e bonito!",
+      "crie um jogo de forca com lindo grafico o melhor que vc conseguir criar"
     ],
     "ai_execute": [
       "esta aberto ainda, tem duas",
       "quanto tempo o pc ficou ligado hj?",
       "telegram esta configura ou nao?",
       "quais as ultimas alterações feita ?",
-      "qual se nivel de inteligencial atual?"
+      "qual se nivel de inteligencial atual?",
+      "vamos instalar outra ia pra vc ter mais poder ai? alem do groq , vamos ter mais "
     ],
     "power": [
       "melhore , e coloque pra quando terminar reiniciar o jogo, melhore a qualidade gr"
+    ],
+    "skill_web": [
+      "como esta sua inteligencia?"
     ]
   },
   "success_rate": {
-    "total": 63,
-    "success": 63
+    "total": 67,
+    "success": 67
   },
   "vocabulary": {
-    "quanto": 2,
+    "quanto": 3,
     "armazenamento": 2,
     "tenhos": 1,
     "disponivel": 1,
@@ -255,7 +267,7 @@
     "quais": 5,
     "principais": 2,
     "noticias": 2,
-    "meia": 6,
+    "meia": 7,
     "noite": 1,
     "agora": 1,
     "sobre": 5,
@@ -273,11 +285,11 @@
     "conteudos": 1,
     "dessa": 1,
     "dektop": 1,
-    "criar": 1,
-    "aplicativo": 6,
+    "criar": 2,
+    "aplicativo": 7,
     "completo": 2,
     "simples": 2,
-    "crie": 21,
+    "crie": 23,
     "apenas": 1,
     "testar": 1,
     "deixe": 1,
@@ -299,7 +311,7 @@
     "tempo": 4,
     "paulo": 3,
     "fale": 4,
-    "inteligencia": 2,
+    "inteligencia": 4,
     "artificial": 2,
     "espaco": 1,
     "disco": 1,
@@ -310,7 +322,7 @@
     "meusprojetos": 1,
     "elon": 1,
     "musk": 1,
-    "jogo": 10,
+    "jogo": 11,
     "corrida": 6,
     "estilo": 2,
     "mario": 2,
@@ -334,14 +346,14 @@
     "notas": 1,
     "machine": 1,
     "learning": 1,
-    "lembrar": 5,
-    "tomar": 5,
-    "agua": 5,
-    "duas": 3,
+    "lembrar": 6,
+    "tomar": 6,
+    "agua": 6,
+    "duas": 4,
     "calculadoras": 1,
     "abertas": 1,
     "aberto": 1,
-    "ainda": 1,
+    "ainda": 2,
     "quantos": 1,
     "temos": 1,
     "ficou": 1,
@@ -380,6 +392,23 @@
     "cima": 1,
     "truco": 1,
     "pessoas": 1,
-    "bonito": 1
+    "bonito": 1,
+    "forca": 1,
+    "lindo": 1,
+    "grafico": 1,
+    "melhor": 1,
+    "conseguir": 1,
+    "vamos": 2,
+    "instalar": 2,
+    "outra": 1,
+    "poder": 1,
+    "alem": 1,
+    "groq": 1,
+    "funcionando": 1,
+    "juntas": 1,
+    "aperfeçoar": 1,
+    "nossa": 1,
+    "pronta": 1,
+    "melhorar": 1
   }
 }
