@@ -66,5 +66,22 @@
     "updated_at": "2026-02-17T20:15:39.152950",
     "retry_count": 0,
     "max_retries": 2
+  },
+  {
+    "id": "task_1771370407_4",
+    "title": "TestFinal",
+    "description": "desc",
+    "state": "done",
+    "assigned_agent": "general_agent",
+    "command": "cmd",
+    "parent_id": null,
+    "order": 0,
+    "result_message": "",
+    "result_success": null,
+    "result_proof": null,
+    "created_at": "2026-02-17T20:20:07.136657",
+    "updated_at": "2026-02-17T20:20:07.145926",
+    "retry_count": 0,
+    "max_retries": 2
   }
 ]
