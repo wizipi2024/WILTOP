@@ -1,0 +1,38 @@
+{
+  "copy_templates": [
+    {
+      "titulo": "Copy para conversao",
+      "exemplo": "Nao deixe passar! Oferta limitada..."
+    },
+    {
+      "titulo": "Copy para urgencia",
+      "exemplo": "Apenas hoje! Apenas 5 unidades disponiveis..."
+    },
+    {
+      "titulo": "Copy para beneficio",
+      "exemplo": "Economize 50% comprando agora..."
+    }
+  ],
+  "ideias_criativos": [
+    {
+      "idea": "Video testimonial",
+      "descricao": "Cliente falando resultado"
+    },
+    {
+      "idea": "Carousel de produtos",
+      "descricao": "Mostrar variedade"
+    },
+    {
+      "idea": "Antes e depois",
+      "descricao": "Transformacao visual"
+    }
+  ],
+  "stats": {
+    "campanhas_ativas": 5,
+    "impressoes": 500000,
+    "cliques": 15000,
+    "ctr": 3.0,
+    "conversoes": 450,
+    "roas": 3.5
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "calculo_template": {
+    "custo": 100,
+    "despesas_pct": 20,
+    "margem_pct": 30
+  },
+  "margens": {
+    "bruta": 50,
+    "operacional": 35,
+    "liquida": 20,
+    "markup": 1.67
+  },
+  "preco_sugerido": {
+    "minimo": 100,
+    "ideal": 150,
+    "maximo": 200,
+    "elasticidade": 1.2
+  },
+  "competidores": [
+    {
+      "nome": "Concorrente A",
+      "preco": 145,
+      "posicao": "mais barato"
+    },
+    {
+      "nome": "Concorrente B",
+      "preco": 160,
+      "posicao": "mais caro"
+    }
+  ]
+}

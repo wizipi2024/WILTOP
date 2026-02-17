@@ -1,0 +1,48 @@
+{
+  "vendas": {
+    "periodo": "Janeiro",
+    "total_vendas": 150,
+    "faturamento": 15890.5,
+    "ticket_medio": 105.94,
+    "crescimento_pct": 12.5,
+    "top_produto": "Produto A"
+  },
+  "financeiro": {
+    "receita": 50000,
+    "custos": 20000,
+    "despesas": 8000,
+    "lucro_bruto": 30000,
+    "lucro_liquido": 22000,
+    "margem_pct": 44
+  },
+  "estoque": {
+    "total_skus": 45,
+    "valor_total": 85000,
+    "criticos": 3,
+    "excesso": 5,
+    "rotacao_dias": 30,
+    "turnover": 12.2
+  },
+  "kpis": {
+    "cac": 85,
+    "ltv": 500,
+    "taxa_conversao": 3.2,
+    "taxa_retencao": 75,
+    "nps": 65,
+    "roi_marketing": 350
+  },
+  "periodos": {
+    "Janeiro": {
+      "faturamento": 15890,
+      "crescimento": "+10%"
+    },
+    "Fevereiro": {
+      "faturamento": 18000,
+      "crescimento": "+13%"
+    },
+    "Marco": {
+      "faturamento": 20500,
+      "crescimento": "+14%"
+    }
+  }
+}

@@ -1,0 +1,96 @@
+# ============================================
+# ASSISTENTE IA WILLIAM - DEPENDÊNCIAS
+# ============================================
+
+# Core IA / LLMs
+groq>=0.4.0
+anthropic>=0.18.0
+openai>=1.12.0
+langchain>=0.1.0
+langchain-community>=0.0.20
+chromadb>=0.4.0
+
+# Processamento de Documentos
+python-docx>=1.1.0
+openpyxl>=3.1.0
+pypdf2>=3.0.0
+python-pptx>=0.6.21
+reportlab>=4.0.0
+Pillow>=10.0.0
+
+# Interface GUI Desktop
+customtkinter>=5.2.0
+tkinterdnd2>=0.3.0
+
+# Interface CLI
+rich>=13.0.0
+click>=8.1.0
+prompt-toolkit>=3.0.43
+colorama>=0.4.6
+
+# Bots de Controle Remoto
+python-telegram-bot>=20.0
+pywhatkit>=5.4
+
+# API REST
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+pydantic>=2.5.0
+python-multipart>=0.0.6
+
+# Web & Internet
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+selenium>=4.16.0
+playwright>=1.40.0
+httpx>=0.26.0
+
+# Automação e Agendamento
+schedule>=1.2.0
+apscheduler>=3.10.0
+watchdog>=3.0.0
+
+# Análise de Dados
+pandas>=2.1.0
+numpy>=1.24.0
+matplotlib>=3.8.0
+seaborn>=0.13.0
+plotly>=5.18.0
+scipy>=1.11.0
+
+# Sistema / Monitoramento
+psutil>=5.9.0
+pywin32>=306  # Windows específico
+winshell>=0.6
+py-cpuinfo>=9.0.0
+
+# Utilidades
+python-dotenv>=1.0.0
+pyyaml>=6.0.1
+tqdm>=4.66.0
+validators>=0.22.0
+python-dateutil>=2.8.0
+
+# Logging e Monitoramento
+loguru>=0.7.0
+
+# Banco de Dados
+sqlalchemy>=2.0.0
+aiosqlite>=0.19.0
+
+# Testes
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+pytest-mock>=3.12.0
+
+# Segurança e Criptografia
+cryptography>=41.0.0
+pyjwt>=2.8.0
+
+# Embeddings e ML
+sentence-transformers>=2.2.0
+
+# System Tray (v4)
+pystray>=0.19.0

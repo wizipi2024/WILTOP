@@ -1,0 +1,112 @@
+================================================================================
+                   COMO ABRIR O ASSISTENTE COM INTERFACE GRAFICA
+================================================================================
+
+METODO 1 - DUPLO CLIQUE (MAIS FACIL!)
+--------------------------------------
+
+1. Va ate a pasta: C:\Users\wizip\Desktop\WILTOP
+
+2. Procure o arquivo: ABRIR_WILLIAM.bat
+
+3. De DUPLO CLIQUE nele!
+
+4. Pronto! A janela do assistente vai abrir!
+
+
+METODO 2 - PELO TERMINAL
+-------------------------
+
+1. Abra o terminal (cmd ou PowerShell)
+
+2. Digite:
+   cd C:\Users\wizip\Desktop\WILTOP
+   venv\Scripts\activate
+   python run_gui.py
+
+3. Pronto! A janela vai abrir!
+
+
+METODO 3 - ATALHO NA AREA DE TRABALHO
+--------------------------------------
+
+1. Clique com botao direito em ABRIR_WILLIAM.bat
+
+2. Escolha "Criar atalho"
+
+3. Arraste o atalho para sua Area de Trabalho
+
+4. Agora e so clicar no atalho!
+
+
+================================================================================
+COMO USAR A INTERFACE
+================================================================================
+
+A INTERFACE TEM:
+----------------
+
+[TOPO]
+  - Titulo: "Assistente IA William"
+  - Status: Mostra se esta online ou offline
+
+[AREA DE CHAT]
+  - Aqui aparecem todas as mensagens suas e do William
+  - Role para cima/baixo para ver historico
+
+[CAMPO DE TEXTO]
+  - Digite sua mensagem aqui
+  - Pressione ENTER ou clique em "Enviar"
+
+[BOTOES]
+  - "Enviar": Envia sua mensagem
+  - "Limpar Chat": Apaga todas as mensagens
+  - "Ver Status": Mostra informacoes do sistema
+
+
+EXEMPLO DE USO:
+---------------
+
+1. Abra o app (duplo clique em ABRIR_WILLIAM.bat)
+
+2. Aguarde aparecer "Sistema iniciado com sucesso!"
+
+3. Digite no campo de texto: "Ola! Como voce esta?"
+
+4. Clique em "Enviar" ou aperte ENTER
+
+5. Aguarde a resposta aparecer na area de chat
+
+6. Continue conversando!
+
+
+DICAS:
+------
+
+- Pressione ENTER para enviar mensagem rapido
+- Use "Limpar Chat" para comecar conversa nova
+- O assistente lembra do contexto da conversa
+- Voce pode minimizar a janela e usar outros programas
+
+
+PROBLEMAS?
+----------
+
+Se a janela nao abrir:
+1. Verifique se o venv esta ativado
+2. Tente: venv\Scripts\activate
+3. Depois: python run_gui.py
+
+Se aparecer erro:
+1. Leia a mensagem de erro
+2. Verifique o arquivo .env (API key)
+3. Veja os logs em data/logs/william.log
+
+
+================================================================================
+PRONTO! APROVEITE SEU ASSISTENTE COM INTERFACE GRAFICA!
+================================================================================
+
+Localizacao do arquivo: C:\Users\wizip\Desktop\WILTOP\ABRIR_WILLIAM.bat
+
+Simplesmente de DUPLO CLIQUE e use!

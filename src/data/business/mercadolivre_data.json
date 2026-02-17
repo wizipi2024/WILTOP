@@ -1,0 +1,55 @@
+{
+  "anuncios": [
+    {
+      "id": "ML001",
+      "titulo": "Produto A",
+      "preco": 99.9,
+      "estoque": 10,
+      "status": "ativo"
+    },
+    {
+      "id": "ML002",
+      "titulo": "Produto B",
+      "preco": 149.9,
+      "estoque": 5,
+      "status": "ativo"
+    },
+    {
+      "id": "ML003",
+      "titulo": "Produto C",
+      "preco": 79.9,
+      "estoque": 0,
+      "status": "pausado"
+    }
+  ],
+  "vendas": {
+    "total_vendas": 150,
+    "faturamento": 15890.5,
+    "ticket_medio": 105.94,
+    "taxa_conversao": 12.5,
+    "reputacao": "Excelente"
+  },
+  "perguntas": [
+    {
+      "id": "P001",
+      "anuncio_id": "ML001",
+      "pergunta": "Tem em outra cor?",
+      "resposta": "Nao disponivel"
+    },
+    {
+      "id": "P002",
+      "anuncio_id": "ML002",
+      "pergunta": "Qual o prazo de envio?",
+      "resposta": "5-7 dias uteis"
+    }
+  ],
+  "frete": {
+    "metodos": [
+      "Mercado Envios",
+      "Loggi",
+      "Sedex"
+    ],
+    "prazo_dias": 5,
+    "cobertura": "Brasil"
+  }
+}

@@ -1,0 +1,288 @@
+# ============================================
+# PROMPTS E TEMPLATES DO ASSISTENTE IA WILLIAM
+# ============================================
+
+system_prompt: |
+  Você é William, um assistente IA avançado e profissional.
+
+  Suas capacidades incluem:
+  - Criar e editar documentos profissionais (Word, Excel, PDF, PowerPoint)
+  - Gerenciar arquivos e operações de sistema
+  - Pesquisar e extrair informações da web
+  - Automatizar tarefas repetitivas e complexas
+  - Analisar dados e gerar insights visuais
+
+  Diretrizes:
+  - Seja sempre útil, preciso e proativo
+  - Forneça respostas claras e bem estruturadas
+  - Quando executar ações, confirme o resultado
+  - Se encontrar problemas, explique e sugira alternativas
+  - Mantenha contexto de conversas anteriores
+
+# IDENTIFICAÇÃO DE INTENÇÕES
+intents:
+  # Documentos
+  create_document:
+    patterns:
+      - "criar documento"
+      - "novo arquivo word"
+      - "gerar relatório"
+      - "fazer documento"
+    response_template: "Vou criar um documento para você. Que tipo de documento deseja?"
+    module: "documents"
+
+  create_spreadsheet:
+    patterns:
+      - "criar planilha"
+      - "novo excel"
+      - "fazer tabela"
+    response_template: "Vou criar uma planilha. Quais dados deseja incluir?"
+    module: "documents"
+
+  create_presentation:
+    patterns:
+      - "criar apresentação"
+      - "novo powerpoint"
+      - "fazer slides"
+    response_template: "Vou criar uma apresentação. Qual o tema?"
+    module: "documents"
+
+  create_pdf:
+    patterns:
+      - "criar pdf"
+      - "gerar pdf"
+      - "converter para pdf"
+    response_template: "Vou criar um PDF. Qual o conteúdo?"
+    module: "documents"
+
+  # Sistema
+  list_files:
+    patterns:
+      - "listar arquivos"
+      - "mostrar arquivos"
+      - "quais arquivos"
+    response_template: "Vou listar os arquivos. Qual diretório?"
+    module: "system"
+
+  organize_files:
+    patterns:
+      - "organizar arquivos"
+      - "arrumar pasta"
+      - "ordenar arquivos"
+    response_template: "Vou organizar os arquivos. Por qual critério?"
+    module: "system"
+
+  clean_system:
+    patterns:
+      - "limpar sistema"
+      - "liberar espaço"
+      - "otimizar pc"
+      - "apagar temporários"
+    response_template: "Iniciando limpeza do sistema..."
+    module: "system"
+
+  create_backup:
+    patterns:
+      - "fazer backup"
+      - "criar backup"
+      - "copiar segurança"
+    response_template: "Vou criar um backup. De qual pasta?"
+    module: "system"
+
+  # Internet
+  search_web:
+    patterns:
+      - "pesquisar"
+      - "buscar na web"
+      - "procurar online"
+      - "google"
+    response_template: "Vou pesquisar para você. O que deseja encontrar?"
+    module: "internet"
+
+  download_file:
+    patterns:
+      - "baixar arquivo"
+      - "fazer download"
+      - "salvar arquivo"
+    response_template: "Vou baixar o arquivo. Qual a URL?"
+    module: "internet"
+
+  scrape_website:
+    patterns:
+      - "extrair dados"
+      - "pegar informações"
+      - "coletar dados do site"
+    response_template: "Vou extrair os dados. Qual site?"
+    module: "internet"
+
+  # Automação
+  schedule_task:
+    patterns:
+      - "agendar tarefa"
+      - "programar ação"
+      - "executar depois"
+    response_template: "Vou agendar. Qual tarefa e quando?"
+    module: "automation"
+
+  create_workflow:
+    patterns:
+      - "criar workflow"
+      - "automatizar processo"
+      - "sequência de ações"
+    response_template: "Vou criar um workflow. Quais os passos?"
+    module: "automation"
+
+  # Análise
+  analyze_data:
+    patterns:
+      - "analisar dados"
+      - "análise de dados"
+      - "estatísticas"
+    response_template: "Vou analisar os dados. Qual arquivo?"
+    module: "analysis"
+
+  create_chart:
+    patterns:
+      - "criar gráfico"
+      - "gerar gráfico"
+      - "visualizar dados"
+    response_template: "Vou criar um gráfico. Qual tipo?"
+    module: "analysis"
+
+  generate_report:
+    patterns:
+      - "gerar relatório"
+      - "criar relatório"
+      - "fazer relatório"
+    response_template: "Vou gerar um relatório. Sobre quais dados?"
+    module: "analysis"
+
+  # Conversação
+  greeting:
+    patterns:
+      - "olá"
+      - "oi"
+      - "bom dia"
+      - "boa tarde"
+      - "boa noite"
+    response_template: "Olá! Sou o William, seu assistente IA. Como posso ajudar?"
+    module: "conversation"
+
+  help:
+    patterns:
+      - "ajuda"
+      - "help"
+      - "o que você faz"
+      - "suas capacidades"
+    response_template: "Posso ajudar com documentos, sistema, internet, automação e análise de dados. O que precisa?"
+    module: "conversation"
+
+  status:
+    patterns:
+      - "status"
+      - "como está"
+      - "tudo funcionando"
+    response_template: "Sistema operacional. Todos os módulos funcionando normalmente."
+    module: "conversation"
+
+# TEMPLATES DE RESPOSTA
+response_templates:
+  success: |
+    ✓ Ação concluída com sucesso!
+    {details}
+
+  error: |
+    ✗ Ocorreu um erro:
+    {error_message}
+
+    Sugestão: {suggestion}
+
+  processing: |
+    ⏳ Processando sua solicitação...
+    Isso pode levar alguns momentos.
+
+  needs_clarification: |
+    ❓ Preciso de mais informações para continuar.
+    {question}
+
+  partial_success: |
+    ⚠️  Ação parcialmente concluída:
+    {details}
+
+# COMANDOS ESPECIAIS
+commands:
+  "/help":
+    description: "Mostra ajuda e comandos disponíveis"
+    response: "Comandos disponíveis: /help, /status, /clear, /history, /exit"
+
+  "/status":
+    description: "Mostra status do sistema"
+    response: "Sistema: {system_status}\nMódulos ativos: {active_modules}\nMemória: {memory_usage}"
+
+  "/clear":
+    description: "Limpa histórico de conversas"
+    response: "Histórico limpo."
+
+  "/history":
+    description: "Mostra histórico de conversas"
+    response: "Últimas {n} interações:\n{history}"
+
+  "/exit":
+    description: "Encerra o assistente"
+    response: "Até logo! Foi um prazer ajudar."
+
+# MENSAGENS DO SISTEMA
+system_messages:
+  welcome: |
+    🤖 Assistente IA William v1.0
+
+    Bem-vindo! Estou aqui para ajudar com:
+    • Documentos profissionais
+    • Gerenciamento de sistema
+    • Pesquisas e dados da web
+    • Automação de tarefas
+    • Análise de dados
+
+    Como posso ajudar hoje?
+
+  goodbye: |
+    👋 Até logo!
+    Foi um prazer ajudar. Volte sempre que precisar!
+
+  error_generic: |
+    😕 Ops! Algo deu errado.
+    Por favor, tente novamente ou reformule sua solicitação.
+
+  rate_limit: |
+    ⏸️  Muitas requisições em pouco tempo.
+    Por favor, aguarde alguns segundos antes de tentar novamente.
+
+  module_disabled: |
+    ⚠️  O módulo '{module}' está desabilitado.
+    Entre em contato com o administrador para habilitá-lo.
+
+  no_api_key: |
+    🔑 Nenhuma API key configurada!
+    Configure suas credenciais no arquivo .env para usar o assistente.
+
+# PERGUNTAS DE CLARIFICAÇÃO
+clarification_questions:
+  document_type:
+    - "Que tipo de documento você precisa? (Word, Excel, PDF, PowerPoint)"
+    - "Qual formato de documento prefere?"
+
+  file_location:
+    - "Qual o caminho ou diretório do arquivo?"
+    - "Onde está localizado o arquivo?"
+
+  date_time:
+    - "Qual data e hora deseja agendar?"
+    - "Quando deve ser executado?"
+
+  data_source:
+    - "Qual a fonte dos dados? (arquivo, URL, manual)"
+    - "De onde vêm os dados?"
+
+  chart_type:
+    - "Qual tipo de gráfico? (linha, barra, pizza, dispersão)"
+    - "Como deseja visualizar os dados?"

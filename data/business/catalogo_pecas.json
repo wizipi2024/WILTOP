@@ -1,0 +1,182 @@
+{
+  "pecas": [
+    {
+      "id": "ALT001",
+      "nome": "Alternador",
+      "marca": "Bosch",
+      "codigo": "F000BL0759",
+      "preco": 450.0,
+      "estoque": 3,
+      "compatibilidade": [
+        "Gol G4",
+        "Gol G5",
+        "Fox",
+        "Polo",
+        "Saveiro"
+      ],
+      "categoria": "eletrica"
+    },
+    {
+      "id": "ALT002",
+      "nome": "Alternador",
+      "marca": "Valeo",
+      "codigo": "437454",
+      "preco": 520.0,
+      "estoque": 1,
+      "compatibilidade": [
+        "Corsa",
+        "Celta",
+        "Prisma",
+        "Classic"
+      ],
+      "categoria": "eletrica"
+    },
+    {
+      "id": "FIL001",
+      "nome": "Filtro de Oleo",
+      "marca": "Tecfil",
+      "codigo": "PH6017",
+      "preco": 25.0,
+      "estoque": 15,
+      "compatibilidade": [
+        "Gol G4",
+        "Gol G5",
+        "Fox",
+        "Polo",
+        "Voyage"
+      ],
+      "categoria": "filtros"
+    },
+    {
+      "id": "FIL002",
+      "nome": "Filtro de Ar",
+      "marca": "Mann",
+      "codigo": "C27006",
+      "preco": 35.0,
+      "estoque": 8,
+      "compatibilidade": [
+        "Gol G5",
+        "Fox",
+        "Up",
+        "Polo"
+      ],
+      "categoria": "filtros"
+    },
+    {
+      "id": "PAS001",
+      "nome": "Pastilha de Freio Dianteira",
+      "marca": "Frasle",
+      "codigo": "PD/285",
+      "preco": 85.0,
+      "estoque": 6,
+      "compatibilidade": [
+        "Gol G4",
+        "Gol G5",
+        "Fox",
+        "Polo",
+        "Saveiro"
+      ],
+      "categoria": "freios"
+    },
+    {
+      "id": "AMO001",
+      "nome": "Amortecedor Dianteiro",
+      "marca": "Cofap",
+      "codigo": "GP32496",
+      "preco": 280.0,
+      "estoque": 4,
+      "compatibilidade": [
+        "Gol G5",
+        "Fox",
+        "Voyage"
+      ],
+      "categoria": "suspensao"
+    },
+    {
+      "id": "COR001",
+      "nome": "Correia Dentada",
+      "marca": "Gates",
+      "codigo": "5549XS",
+      "preco": 95.0,
+      "estoque": 5,
+      "compatibilidade": [
+        "Gol G4",
+        "Gol G5",
+        "Fox",
+        "Polo",
+        "Saveiro"
+      ],
+      "categoria": "motor"
+    },
+    {
+      "id": "VEL001",
+      "nome": "Vela de Ignicao",
+      "marca": "NGK",
+      "codigo": "BKR6E",
+      "preco": 18.0,
+      "estoque": 20,
+      "compatibilidade": [
+        "Gol G4",
+        "Gol G5",
+        "Fox",
+        "Polo",
+        "Corsa",
+        "Celta"
+      ],
+      "categoria": "ignicao"
+    },
+    {
+      "id": "BOB001",
+      "nome": "Bobina de Ignicao",
+      "marca": "Bosch",
+      "codigo": "0221604103",
+      "preco": 180.0,
+      "estoque": 3,
+      "compatibilidade": [
+        "Gol G5",
+        "Fox",
+        "Polo",
+        "Voyage",
+        "Up"
+      ],
+      "categoria": "ignicao"
+    },
+    {
+      "id": "RAD001",
+      "nome": "Radiador",
+      "marca": "Visconde",
+      "codigo": "12835",
+      "preco": 350.0,
+      "estoque": 2,
+      "compatibilidade": [
+        "Gol G4",
+        "Gol G5",
+        "Saveiro"
+      ],
+      "categoria": "arrefecimento"
+    }
+  ],
+  "metadata": {
+    "total_pecas": 10,
+    "categorias": [
+      "eletrica",
+      "filtros",
+      "freios",
+      "suspensao",
+      "motor",
+      "ignicao",
+      "arrefecimento"
+    ],
+    "marcas": [
+      "Bosch",
+      "Valeo",
+      "Tecfil",
+      "Mann",
+      "Frasle",
+      "Cofap",
+      "Gates",
+      "NGK",
+      "Visconde"
+    ]
+  }
+}

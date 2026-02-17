@@ -1,0 +1,60 @@
+[
+  {
+    "name": "calculator_skill",
+    "display_name": "Calculadora",
+    "description": "Calculos matematicos e conversoes",
+    "category": "general",
+    "version": "1.0.0",
+    "author": "William System",
+    "installed": true,
+    "builtin": true,
+    "icon": "🧮"
+  },
+  {
+    "name": "web_search_skill",
+    "display_name": "Pesquisa Web",
+    "description": "Busca informacoes na internet",
+    "category": "web",
+    "version": "1.0.0",
+    "author": "William System",
+    "installed": true,
+    "builtin": true,
+    "icon": "🔍"
+  },
+  {
+    "name": "file_ops_skill",
+    "display_name": "Operacoes de Arquivo",
+    "description": "Criar, ler, mover, copiar e organizar arquivos",
+    "category": "file",
+    "version": "1.0.0",
+    "author": "William System",
+    "installed": true,
+    "builtin": true,
+    "icon": "📁"
+  },
+  {
+    "name": "browser_skill",
+    "display_name": "Navegador Web",
+    "description": "Automatiza navegacao web com Playwright/Selenium",
+    "category": "web",
+    "version": "1.0.0",
+    "author": "William System",
+    "installed": true,
+    "builtin": true,
+    "icon": "🌐",
+    "requires": [
+      "playwright"
+    ]
+  },
+  {
+    "name": "autopecas_skill",
+    "display_name": "Auto Pecas",
+    "description": "Consulta catalogo de pecas automotivas, precos e compatibilidade",
+    "category": "business",
+    "version": "1.0.0",
+    "author": "William System",
+    "installed": false,
+    "builtin": false,
+    "icon": "🔧"
+  }
+]

@@ -1,0 +1,105 @@
+# ============================================
+# ASSISTENTE IA WILLIAM - GITIGNORE
+# ============================================
+
+# === Ambiente Virtual Python ===
+venv/
+env/
+ENV/
+.venv
+
+# === Arquivos Python ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# === Dados Sensíveis ===
+.env
+*.key
+*.pem
+*.cert
+secrets/
+credentials/
+
+# === Dados da Aplicação ===
+data/memory/*.db
+data/logs/*.log
+data/cache/*
+data/exports/*
+!data/memory/.gitkeep
+!data/logs/.gitkeep
+!data/cache/.gitkeep
+!data/exports/.gitkeep
+
+# === IDEs e Editores ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# === Testes ===
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# === Jupyter Notebooks ===
+.ipynb_checkpoints
+*.ipynb
+
+# === Documentos Temporários ===
+*.tmp
+*.temp
+~$*
+
+# === Sistema Operacional ===
+Thumbs.db
+desktop.ini
+.DS_Store
+.Spotlight-V100
+.Trashes
+
+# === ChromaDB ===
+chroma_db/
+*.chromadb
+
+# === Logs ===
+*.log
+logs/
+
+# === Selenium ===
+geckodriver.log
+chromedriver.log
+
+# === Playwright ===
+.playwright/
+playwright-report/
+
+# === Backup ===
+*.bak
+*.backup
+venv/
+__pycache__/
+*.pyc
+.env.local

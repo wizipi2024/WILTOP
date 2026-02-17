@@ -1,0 +1,58 @@
+{
+  "tickets": [
+    {
+      "id": "T001",
+      "cliente": "João Silva",
+      "assunto": "Produto chegou com defeito",
+      "prioridade": "alta"
+    },
+    {
+      "id": "T002",
+      "cliente": "Maria Santos",
+      "assunto": "Duvida sobre tamanho",
+      "prioridade": "media"
+    },
+    {
+      "id": "T003",
+      "cliente": "Pedro Costa",
+      "assunto": "Atraso na entrega",
+      "prioridade": "alta"
+    }
+  ],
+  "faqs": [
+    {
+      "pergunta": "Qual o prazo de entrega?",
+      "resposta": "De 5 a 10 dias uteis."
+    },
+    {
+      "pergunta": "Como faço devolucao?",
+      "resposta": "Entre em contato conosco no prazo de 30 dias."
+    },
+    {
+      "pergunta": "Vcs aceitam parcelamento?",
+      "resposta": "Sim, ate 12x no cartao de credito."
+    }
+  ],
+  "stats": {
+    "resolvidos": 45,
+    "tempo_resposta_min": 2,
+    "satisfacao_pct": 92,
+    "nps": 68,
+    "resolucao_primeira_vez": 78,
+    "csat": 4.5
+  },
+  "templates": [
+    {
+      "tipo": "Devolucao",
+      "exemplo": "Para solicitar devolucao, entre em contato..."
+    },
+    {
+      "tipo": "Atraso",
+      "exemplo": "Peço desculpas pelo atraso. Vamos..."
+    },
+    {
+      "tipo": "Defeito",
+      "exemplo": "Sinto muito! Vamos resolver de imediato..."
+    }
+  ]
+}

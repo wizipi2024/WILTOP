@@ -1,0 +1,93 @@
+================================================================================
+                         *** COMECE AQUI ***
+                    GUIA RAPIDO DO WILLIAM COMPLETO
+================================================================================
+
+
+>>> PASSO 1: EXECUTE O DIAGNOSTICO <<<
+
+Duplo clique em: DIAGNOSTICO.bat
+
+Isso vai verificar se tudo esta OK!
+
+
+>>> PASSO 2: SE TUDO OK, ABRA O WILLIAM <<<
+
+Duplo clique em: ABRIR_COMPLETO.bat
+
+
+>>> PASSO 3: TESTE COM ESTES COMANDOS <<<
+
+Digite no William (um de cada vez):
+
+1. "abra o bloco de notas"
+   - Deve abrir o Notepad
+   - Deve aparecer [ACAO] em amarelo
+
+2. "crie um arquivo teste.txt na area de trabalho"
+   - Deve criar o arquivo
+   - Verifique na sua area de trabalho!
+
+3. "mostre uso de memoria"
+   - Deve mostrar CPU, RAM, Disco
+   - Aparece [ACAO] com as informacoes
+
+
+>>> SE FUNCIONAR <<<
+
+PARABENS! Esta tudo funcionando! 🎉
+
+Agora voce pode usar comandos como:
+- "abrir calculadora"
+- "execute o chrome"
+- "liste arquivos da pasta downloads"
+- "comando dir"
+- E MUITO MAIS!
+
+
+>>> SE NAO FUNCIONAR <<<
+
+Execute o diagnostico primeiro: DIAGNOSTICO.bat
+
+Ele vai te dizer exatamente o que esta errado!
+
+Problemas comuns:
+- Sistema nao autorizado -> Execute: AUTORIZAR_TUDO.py
+- Ambiente nao ativado -> Execute: venv\Scripts\activate
+- API key faltando -> Configure o .env
+
+
+================================================================================
+ARQUIVOS IMPORTANTES
+================================================================================
+
+DIAGNOSTICO.bat         <- Execute PRIMEIRO para verificar tudo
+ABRIR_COMPLETO.bat      <- Abre o William versao completa
+AUTORIZAR_TUDO.py       <- Da poderes totais (se necessario)
+TESTE_RAPIDO.txt        <- Guia de testes detalhado
+COMECE_AQUI.txt         <- Este arquivo
+
+
+================================================================================
+QUICK START (SE JA ESTA TUDO OK)
+================================================================================
+
+1. DIAGNOSTICO.bat  (verifica)
+2. ABRIR_COMPLETO.bat  (abre o William)
+3. Digite: "abra o bloco de notas"
+4. Se funcionar = PRONTO! 🚀
+
+
+================================================================================
+SUPORTE
+================================================================================
+
+Se precisar de ajuda:
+1. Execute DIAGNOSTICO.bat
+2. Leia TESTE_RAPIDO.txt
+3. Verifique data/logs/william.log
+
+
+================================================================================
+                           BOA SORTE! 🎉
+================================================================================

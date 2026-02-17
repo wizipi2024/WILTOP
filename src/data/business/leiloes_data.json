@@ -1,0 +1,32 @@
+{
+  "leiloes": [
+    {
+      "id": "LEI001",
+      "descricao": "Imovel no centro",
+      "lance_minimo": 250000,
+      "status": "ativo"
+    },
+    {
+      "id": "LEI002",
+      "descricao": "Veiculo 2015",
+      "lance_minimo": 15000,
+      "status": "ativo"
+    },
+    {
+      "id": "LEI003",
+      "descricao": "Equipamentos",
+      "lance_minimo": 5000,
+      "status": "finalizado"
+    }
+  ],
+  "analise": {
+    "alto_retorno": 2,
+    "preco_medio": 5000,
+    "taxa_sucesso": 75
+  },
+  "historico": {
+    "total_arrematados": 12,
+    "investimento": 45000,
+    "lucro": 18000
+  }
+}
