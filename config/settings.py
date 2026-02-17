@@ -31,7 +31,6 @@ class Settings:
     GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
     ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
-    GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", "")
 
     # ===== PROVEDOR IA PADRÃO =====
     DEFAULT_AI_PROVIDER = os.getenv("DEFAULT_AI_PROVIDER", "groq").lower()
@@ -75,17 +74,6 @@ class Settings:
                 "gpt-4o"
             ],
             "default_model": "gpt-4-turbo-preview",
-            "max_tokens": 4096,
-            "timeout": 60
-        },
-        "google": {
-            "api_key": GOOGLE_API_KEY,
-            "models": [
-                "gemini-2.0-flash",
-                "gemini-pro",
-                "gemini-pro-vision"
-            ],
-            "default_model": "gemini-2.0-flash",
             "max_tokens": 4096,
             "timeout": 60
         }

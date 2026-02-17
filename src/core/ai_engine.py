@@ -46,21 +46,7 @@ class AIEngine:
             except Exception as e:
                 log.warning(f"[ERRO] Falha ao inicializar Groq: {e}")
 
-        # 2. Google Gemini - OPCIONAL
-        if settings.GOOGLE_API_KEY and settings.GOOGLE_API_KEY != "your_google_key_here":
-            try:
-                from src.ai_providers.google_provider import GoogleProvider
-                google_prov = GoogleProvider(
-                    api_key=settings.GOOGLE_API_KEY,
-                    model=getattr(settings, 'GOOGLE_MODEL', 'gemini-2.0-flash')
-                )
-                if google_prov.is_available():
-                    self.providers["google"] = google_prov
-                    log.info("[OK] Google Gemini provider inicializado")
-            except Exception as e:
-                log.warning(f"[ERRO] Falha ao inicializar Google Gemini: {e}")
-
-        # 3. Ollama (local) - OPCIONAL
+        # 2. Ollama (local) - OPCIONAL
         if getattr(settings, 'OLLAMA_ENABLED', False):
             try:
                 from src.ai_providers.ollama_provider import OllamaProvider
@@ -76,7 +62,7 @@ class AIEngine:
             except Exception as e:
                 log.warning(f"[ERRO] Falha ao inicializar Ollama: {e}")
 
-        # 4. OpenAI - OPCIONAL
+        # 3. OpenAI - OPCIONAL
         if settings.OPENAI_API_KEY and settings.OPENAI_API_KEY != "your_openai_key_here":
             try:
                 from src.ai_providers.openai_provider import OpenAIProvider
@@ -92,7 +78,7 @@ class AIEngine:
             except Exception as e:
                 log.warning(f"[ERRO] Falha ao inicializar OpenAI: {e}")
 
-        # 5. Anthropic (Claude) - OPCIONAL
+        # 4. Anthropic (Claude) - OPCIONAL
         if settings.ANTHROPIC_API_KEY and settings.ANTHROPIC_API_KEY != "your_anthropic_key_here":
             try:
                 from src.ai_providers.anthropic_provider import AnthropicProvider
