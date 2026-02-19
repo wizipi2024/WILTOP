@@ -13,6 +13,21 @@ from src.utils.logger import get_logger
 
 log = get_logger(__name__)
 
+# Router importado de forma lazy para evitar circular imports
+_router = None
+
+def _get_router():
+    global _router
+    if _router is None:
+        try:
+            from src.core.intelligence_router import get_router
+            _router = get_router()
+            # Sincroniza modo mesclado com settings
+            _router.mixed_mode = getattr(settings, 'MIXED_MODE', False)
+        except Exception as e:
+            log.debug(f"Router nao disponivel: {e}")
+    return _router
+
 
 class AIEngine:
     """
@@ -46,21 +61,25 @@ class AIEngine:
             except Exception as e:
                 log.warning(f"[ERRO] Falha ao inicializar Groq: {e}")
 
-        # 2. Ollama (local) - OPCIONAL
-        if getattr(settings, 'OLLAMA_ENABLED', False):
-            try:
-                from src.ai_providers.ollama_provider import OllamaProvider
-                ollama = OllamaProvider(
-                    model=getattr(settings, 'OLLAMA_MODEL', 'llama3.1'),
-                    base_url=getattr(settings, 'OLLAMA_BASE_URL', 'http://localhost:11434'),
-                )
-                if ollama.is_available():
-                    self.providers["ollama"] = ollama
+        # 2. Ollama (local) - tenta sempre, silencioso se offline
+        try:
+            from src.ai_providers.ollama_provider import OllamaProvider
+            ollama = OllamaProvider(
+                model=getattr(settings, 'OLLAMA_MODEL', 'llama3.1:8b'),
+                base_url=getattr(settings, 'OLLAMA_BASE_URL', 'http://localhost:11434'),
+            )
+            if ollama.is_available():
+                self.providers["ollama"] = ollama
+                # Descobre modelos instalados
+                try:
+                    models = ollama.list_models()
+                    log.info(f"[OK] Ollama disponivel! Modelos: {models[:5]}")
+                except Exception:
                     log.info("[OK] Ollama provider inicializado")
-                else:
-                    log.info("[--] Ollama habilitado mas nao disponivel")
-            except Exception as e:
-                log.warning(f"[ERRO] Falha ao inicializar Ollama: {e}")
+            else:
+                log.debug("[--] Ollama nao esta rodando (opcional - instale em ollama.com)")
+        except Exception as e:
+            log.debug(f"[--] Ollama nao disponivel: {e}")
 
         # 3. OpenAI - OPCIONAL
         if settings.OPENAI_API_KEY and settings.OPENAI_API_KEY != "your_openai_key_here":
@@ -187,11 +206,26 @@ class AIEngine:
         Raises:
             AIProviderError: Se TODOS os providers falharem
         """
-        # Constroi ordem de tentativa
+        # Constroi ordem de tentativa (com roteamento inteligente se disponivel)
         order = []
+        router = _get_router()
 
-        # Primeiro o default
-        if self.default_provider in self.providers:
+        if router and message:
+            # Usa roteador para escolher provider ideal
+            preferred, preferred_model = router.route_with_fallback(
+                message, list(self.providers.keys())
+            )
+            if preferred in self.providers:
+                order.append(preferred)
+                # Se tem modelo especifico do Ollama, seta temporariamente
+                if preferred == "ollama" and preferred_model:
+                    try:
+                        self.providers["ollama"].model = preferred_model
+                    except Exception:
+                        pass
+
+        # Depois o default (se nao ja incluido pelo router)
+        if self.default_provider in self.providers and self.default_provider not in order:
             order.append(self.default_provider)
 
         # Depois os outros na ordem de fallback

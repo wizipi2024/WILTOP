@@ -134,12 +134,17 @@ class Settings:
     ]
 
     # ===== MULTI-PROVIDER v4 =====
-    OLLAMA_ENABLED = os.getenv("OLLAMA_ENABLED", "false").lower() == "true"
-    OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.1")
+    OLLAMA_ENABLED = os.getenv("OLLAMA_ENABLED", "true").lower() == "true"
+    OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.1:8b")
     OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
     PROVIDER_FALLBACK_ORDER = os.getenv(
         "PROVIDER_FALLBACK_ORDER", "groq,ollama,openai,anthropic"
     ).split(",")
+
+    # ===== MODO MESCLADO v6 =====
+    # false = so Groq (padrao, mais rapido)
+    # true  = Groq + Ollama local (mais inteligente, economiza cota)
+    MIXED_MODE = os.getenv("MIXED_MODE", "false").lower() == "true"
 
     # ===== OBSERVABILITY v4 =====
     EVENTS_LOG_DIR = str(DATA_DIR / "logs" / "events")

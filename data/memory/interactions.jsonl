@@ -23,3 +23,17 @@
 {"ts": "2026-02-17T20:36:09.631039", "user_msg": "QUAL FOI A IA? JA ESTA PRONTA PRA INSTALAR ? O QUANTO IRA MELHORAR?", "actions": [], "ai_response": "Vou pesquisar pra voce!", "metadata": {}}
 {"ts": "2026-02-17T20:37:39.858135", "user_msg": "OK", "actions": [], "ai_response": "Feito! Encontrei as IAs, agora estou instalando!", "metadata": {}}
 {"ts": "2026-02-17T20:41:44.240159", "user_msg": "crie um aplicativo pra lembrar de tomar agua  1h e meia", "actions": [{"type": "ai_generate", "success": true}], "ai_response": "Pronto!", "metadata": {}}
+{"ts": "2026-02-17T20:52:30.658217", "user_msg": "QUAL AS PRINCIPAIS NOTICIASI DE ULTMAS 4 HRS", "actions": [{"type": "skill_general", "success": true}], "ai_response": "Pronto!", "metadata": {}}
+{"ts": "2026-02-18T18:13:12.868676", "user_msg": "opa blzaa quais as noticias de hj?", "actions": [{"type": "web_answer", "success": true}], "ai_response": "Pronto, notícias de hoje estão disponíveis!", "metadata": {}}
+{"ts": "2026-02-18T18:13:30.260770", "user_msg": "abra a calculadora", "actions": [{"type": "open_app", "success": true}], "ai_response": "Pronto!", "metadata": {}}
+{"ts": "2026-02-18T18:14:04.308877", "user_msg": "crie um jogo de corrida 3d funcional com semafora na saida , as setas pra dirigir!", "actions": [{"type": "ai_generate", "success": true}], "ai_response": "Feito!", "metadata": {}}
+{"ts": "2026-02-18T18:14:47.525728", "user_msg": "mostre meu ip", "actions": [{"type": "network", "success": true}], "ai_response": "Pronto!", "metadata": {}}
+{"ts": "2026-02-18T18:14:51.324030", "user_msg": "bateria", "actions": [{"type": "battery", "success": true}], "ai_response": "Pronto!", "metadata": {}}
+{"ts": "2026-02-18T18:14:55.410496", "user_msg": "quais programas estao abertos", "actions": [{"type": "process_list", "success": true}], "ai_response": "Pronto!", "metadata": {}}
+{"ts": "2026-02-18T18:15:57.372530", "user_msg": "crie funil para marketing", "actions": [{"type": "ai_generate", "success": true}], "ai_response": "Feito!", "metadata": {}}
+{"ts": "2026-02-18T18:20:59.230692", "user_msg": "abrir a calculadora", "actions": [{"type": "open_app", "success": true}], "ai_response": "Pronto!", "metadata": {}}
+{"ts": "2026-02-19T11:45:33.192183", "user_msg": "crie funil para dentista", "actions": [{"type": "ai_generate", "success": true}], "ai_response": "Pronto!", "metadata": {}}
+{"ts": "2026-02-19T11:45:38.670309", "user_msg": "ver pipeline", "actions": [{"type": "ai_generate", "success": true}], "ai_response": "Pronto!", "metadata": {}}
+{"ts": "2026-02-19T11:45:45.236275", "user_msg": "listar workflows", "actions": [{"type": "ai_execute", "success": true}], "ai_response": "Feito!", "metadata": {}}
+{"ts": "2026-02-19T11:49:17.931664", "user_msg": "crie um app de landing page para desntista", "actions": [{"type": "ai_generate", "success": true}], "ai_response": "Pronto!", "metadata": {}}
+{"ts": "2026-02-19T11:49:50.547008", "user_msg": "uso de memoria e cpu", "actions": [{"type": "system_info", "success": true}], "ai_response": "Pronto!", "metadata": {}}

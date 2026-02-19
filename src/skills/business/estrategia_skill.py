@@ -13,6 +13,19 @@ log = get_logger(__name__)
 DATA_DIR = Path("data/business")
 
 
+def _get_ai_response(prompt: str, fallback: str = "") -> str:
+    """Chama a IA real (Groq/Ollama) com o prompt. Usa fallback se falhar."""
+    try:
+        from src.core.ai_engine import get_engine
+        engine = get_engine()
+        response = engine.chat_with_fallback(prompt)
+        if response and len(response) > 20:
+            return response
+    except Exception as e:
+        log.warning(f"IA nao disponivel para estrategia: {e}")
+    return fallback
+
+
 class EstrategiaSkill(BaseSkill):
     """Agente especializado em estratégia de negócios e monetização."""
 
@@ -66,7 +79,22 @@ class EstrategiaSkill(BaseSkill):
     def _estrategia_completa(self, command: str) -> SkillResult:
         nicho = self._extrair_nicho(command)
 
-        # Templates por tipo de nicho
+        # Tenta IA real primeiro
+        ai_prompt = f"""Voce e um consultor de estrategia de negocios senior especializado no mercado brasileiro.
+Crie uma estrategia COMPLETA e DETALHADA para o seguinte nicho: {nicho}
+
+Responda em portugues, de forma estruturada com topicos claros. Inclua:
+1. MODELO DE NEGOCIO: Tipo ideal (consultoria, SaaS, infoproduto, servico recorrente), ticket medio realista em reais
+2. OFERTA PRINCIPAL: Frase de posicionamento clara ("Ajudo X a Y em Z sem W")
+3. AVATAR DO CLIENTE: Perfil demografico, dores especificas, desejos, objecoes
+4. FUNIL DE VENDAS: Topo (consciencia), Meio (consideracao), Fundo (decisao) com canais especificos
+5. CANAIS DE AQUISICAO: Organico e pago, priorizados para o Brasil
+6. METAS 90 DIAS: Numeros realistas para cada mes
+7. PROXIMOS PASSOS: 4 acoes concretas para comecar hoje
+
+Seja especifico para o nicho "{nicho}" com dados reais do mercado brasileiro. Nao seja generico."""
+
+        # Template como fallback
         templates = {
             "dentist": {"modelo": "Consultoria de Marketing B2B", "ticket": "R$2.000-5.000/mês", "canal": "WhatsApp + LinkedIn", "ciclo": "30 dias"},
             "restaurante": {"modelo": "Gestão de Presença Digital", "ticket": "R$800-2.000/mês", "canal": "Instagram + Google Meu Negócio", "ciclo": "15 dias"},
@@ -82,7 +110,7 @@ class EstrategiaSkill(BaseSkill):
                 template = tpl
                 break
 
-        estrategia = f"""[ESTRATEGIA DE NEGOCIO] - {nicho.upper()}
+        fallback_text = f"""[ESTRATEGIA DE NEGOCIO] - {nicho.upper()}
 
 MODELO DE NEGOCIO:
   Tipo: {template['modelo']}
@@ -90,34 +118,40 @@ MODELO DE NEGOCIO:
   Ciclo de Venda: {template['ciclo']}
 
 OFERTA PRINCIPAL:
-  "Ajudo {nicho} a [resultado desejado] em [prazo] sem [principal obstaculo]"
-
-  Exemplo: "Ajudo {nicho} a lotar a agenda e faturar mais em 30 dias
-  sem depender de indicações ou gastar fortune em anúncios"
-
-PROPOSTA DE VALOR:
-  - Resultado 1: Mais clientes qualificados todo mês
-  - Resultado 2: Processo automatizado (menos trabalho manual)
-  - Resultado 3: Previsibilidade de receita
+  "Ajudo {nicho} a lotar a agenda e faturar mais em 30 dias
+  sem depender de indicacoes ou gastar fortune em anuncios"
 
 FUNIL RECOMENDADO:
-  Topo: {template['canal']} → Conteúdo/Prospecção
-  Meio: Qualificação → Call de Discovery (30min)
+  Topo: {template['canal']} → Conteudo/Prospeccao
+  Meio: Qualificacao → Call de Discovery (30min)
   Fundo: Proposta → Contrato → Onboarding
 
-CANAIS PRINCIPAIS:
-  {template['canal']}
+CANAIS PRINCIPAIS: {template['canal']}
 
-METAS PARA 90 DIAS:
-  Mês 1: 3-5 clientes piloto (mesmo que reduzido)
-  Mês 2: 8-10 clientes pagantes
-  Mês 3: 15+ clientes / Receita previsível
+METAS 90 DIAS:
+  Mes 1: 3-5 clientes piloto
+  Mes 2: 8-10 clientes pagantes
+  Mes 3: 15+ clientes / Receita previsivel
 
 PROXIMOS PASSOS:
-  1. [William] Gere o script de abordagem → "gere script para {nicho}"
-  2. [William] Crie a prospecção → "encontre clientes {nicho}"
-  3. [William] Monte o funil n8n → "crie funil para {nicho}"
-  4. [William] Crie landing page → "crie landing page para {nicho}"
+  1. [William] gere script para {nicho}
+  2. [William] encontre clientes {nicho}
+  3. [William] crie funil para {nicho}
+  4. [William] crie landing page para {nicho}
+"""
+
+        # Usa IA real; se falhar, usa fallback
+        ai_response = _get_ai_response(ai_prompt, fallback=fallback_text)
+        estrategia = ai_response
+
+        # Adiciona proximos passos se a IA nao incluiu
+        if "william" not in ai_response.lower():
+            estrategia += f"""
+
+PROXIMOS PASSOS COM WILLIAM:
+  Digite: "gere script para {nicho}"
+  Digite: "encontre clientes {nicho}"
+  Digite: "crie funil para {nicho}"
 """
 
         # Salva estratégia
@@ -132,124 +166,51 @@ PROXIMOS PASSOS:
 
     def _gerar_avatar(self, command: str) -> SkillResult:
         nicho = self._extrair_nicho(command)
-        avatar = f"""[AVATAR / CLIENTE IDEAL] - {nicho.upper()}
-
-PERFIL DEMOGRAFICO:
-  Cargo: Dono/Gestor de {nicho}
-  Faturamento: R$50k-500k/mês
-  Funcionários: 1-20
-  Cidade: Capitais e cidades grandes
-
-DORES PRINCIPAIS:
-  - Falta de clientes novos todo mês
-  - Dependência de indicações (imprevisível)
-  - Muito trabalho manual e repetitivo
-  - Concorrência acirrada com preço baixo
-
-DESEJOS:
-  - Agenda lotada / carteira cheia
-  - Processos automáticos rodando sozinhos
-  - Faturamento previsível e crescente
-  - Mais tempo para focar no que sabe fazer
-
-OBJEÇÕES COMUNS:
-  - "Já tentei e não funcionou"
-  - "Não tenho tempo para isso agora"
-  - "Está caro" / "Preciso pensar"
-  - "Deixa eu falar com meu sócio"
-
-ONDE ENCONTRAR:
-  - Grupos de WhatsApp do setor
-  - Associações comerciais
-  - Google Maps (busca local)
-  - Instagram/LinkedIn com hashtags do nicho
-"""
-        return SkillResult(success=True, message=avatar)
+        prompt = f"""Crie um avatar detalhado do cliente ideal (ICP) para o nicho: {nicho} no mercado brasileiro.
+Inclua: perfil demografico, cargo/renda, dores especificas do setor, desejos, objecoes mais comuns e onde encontra-los online.
+Seja especifico para {nicho}, nao generico."""
+        fallback = f"""[AVATAR / CLIENTE IDEAL] - {nicho.upper()}
+PERFIL: Dono/Gestor de {nicho} | Faturamento R$50k-500k/mes | 1-20 funcionarios
+DORES: Falta clientes novos, dependencia de indicacoes, trabalho manual
+DESEJOS: Agenda lotada, processos automaticos, faturamento previsivel
+OBJECOES: "Ja tentei", "Nao tenho tempo", "Esta caro", "Deixa pensar"
+ONDE ACHAR: WhatsApp grupos do setor, Google Maps, Instagram, LinkedIn"""
+        return SkillResult(success=True, message=_get_ai_response(prompt, fallback))
 
     def _gerar_funil(self, command: str) -> SkillResult:
         nicho = self._extrair_nicho(command)
-        funil = f"""[FUNIL DE VENDAS] - {nicho.upper()}
-
-TOPO (Consciência):
-  Canal: Instagram / Google / Indicações
-  Conteúdo: Dores do {nicho} + Resultados
-  Meta: 100 pessoas/semana vendo seu conteúdo
-
-MEIO (Consideração):
-  Canal: WhatsApp / Direct / Email
-  Ação: Conversa → Qualificação → Call 30min
-  Meta: 20 leads qualificados/semana
-
-FUNDO (Decisão):
-  Canal: Reunião / Proposta / Contrato
-  Ação: Apresentar solução → Fechar → Onboarding
-  Meta: 3-5 novos clientes/mês
-
-METRICAS:
-  Taxa Topo→Meio: 20% (100 → 20 leads)
-  Taxa Meio→Fundo: 25% (20 → 5 calls)
-  Taxa Fechamento: 60% (5 → 3 clientes)
-
-  Com ticket R$2.000/mês → R$6.000/mês recorrente
-  Em 6 meses → R$36.000/mês em recorrência
-"""
-        return SkillResult(success=True, message=funil)
+        prompt = f"""Crie um funil de vendas completo e detalhado para o nicho: {nicho} no Brasil.
+Inclua: etapas (topo/meio/fundo), canais especificos, metricas realistas, taxas de conversao esperadas e projecao de receita.
+Seja especifico para {nicho}."""
+        fallback = f"""[FUNIL DE VENDAS] - {nicho.upper()}
+TOPO: Instagram/Google → 100 pessoas/semana
+MEIO: WhatsApp/Email → 20 leads qualificados/semana
+FUNDO: Reuniao/Proposta → 3-5 clientes/mes
+TICKET R$2.000/mes → R$6.000-10.000/mes em 90 dias"""
+        return SkillResult(success=True, message=_get_ai_response(prompt, fallback))
 
     def _definir_oferta(self, command: str) -> SkillResult:
         nicho = self._extrair_nicho(command)
-        oferta = f"""[OFERTA IRRESISTIVEL] - {nicho.upper()}
-
-NOME DA OFERTA:
-  "Sistema de Crescimento para {nicho.title()}"
-
-O QUE INCLUI:
-  + Diagnóstico completo do negócio (R$500 de valor)
-  + Estratégia personalizada 90 dias
-  + Funil de captação configurado
-  + Sequência de follow-up automática
-  + Relatório mensal de resultados
-  + Suporte via WhatsApp (dias úteis)
-
-GARANTIA:
-  "Se em 30 dias não tiver resultados mensuráveis,
-  devolvemos 100% do investimento"
-
-PRECOS SUGERIDOS:
-  Starter: R$997/mês (1 canal, suporte básico)
-  Growth: R$1.997/mês (3 canais, suporte prioritário)
-  Pro: R$3.997/mês (tudo + consultoria semanal)
-
-  Setup único: R$2.000 + mensalidade
-
-URGENCIA/ESCASSEZ:
-  "Apenas 5 vagas abertas este mês para {nicho}"
-"""
-        return SkillResult(success=True, message=oferta)
+        prompt = f"""Crie uma oferta irresistivel para o nicho: {nicho} no mercado brasileiro.
+Inclua: nome da oferta, o que entrega, precos sugeridos (3 planos), garantia, urgencia/escassez e frase de posicionamento poderosa.
+Seja especifico, com valores realistas em reais para {nicho}."""
+        fallback = f"""[OFERTA IRRESISTIVEL] - {nicho.upper()}
+Nome: "Sistema de Crescimento para {nicho.title()}"
+Starter: R$997/mes | Growth: R$1.997/mes | Pro: R$3.997/mes
+Garantia: 30 dias ou devolucao total
+Escassez: Apenas 5 vagas este mes"""
+        return SkillResult(success=True, message=_get_ai_response(prompt, fallback))
 
     def _sugerir_canais(self, command: str) -> SkillResult:
         nicho = self._extrair_nicho(command)
-        canais = f"""[CANAIS DE AQUISICAO] - {nicho.upper()}
-
-ORGANICO (Gratuito - começa agora):
-  1. WhatsApp: Prospecção direta + Grupos do setor
-  2. Instagram: Conteúdo educativo + Reels
-  3. Google Meu Negócio: Aparecer nas buscas locais
-  4. LinkedIn: Para B2B e perfil profissional
-  5. Indicações: Programa de referência (comissão)
-
-PAGO (Quando tiver capital):
-  1. Google Ads: Busca por intenção (maior conversão)
-  2. Meta Ads: Instagram/Facebook (maior alcance)
-  3. YouTube Ads: Para conteúdo mais longo
+        prompt = f"""Quais sao os melhores canais de aquisicao de clientes para o nicho: {nicho} no Brasil?
+Liste canais organicos (gratuitos) e pagos, com estrategia especifica para cada um, ROI esperado e por onde comecar.
+Priorize o que funciona melhor para {nicho} no mercado brasileiro em 2024."""
+        fallback = f"""[CANAIS DE AQUISICAO] - {nicho.upper()}
+ORGANICO: WhatsApp prospeccao direta, Instagram conteudo, Google Meu Negocio, LinkedIn B2B
+PAGO: Google Ads (maior intencao), Meta Ads (maior alcance)
+RECOMENDACAO: Comece com WhatsApp ativo (0 custo), depois Instagram, depois trafego pago
 
 RECOMENDACAO PARA COMECAR:
-  Fase 1 (0-30 dias): WhatsApp + Prospecção ativa
-  Fase 2 (30-60 dias): Instagram + Conteúdo
-  Fase 3 (60-90 dias): Google Ads (com capital do Fase 1)
-
-ROI ESPERADO:
-  WhatsApp ativo: 5-10 leads/semana (R$0)
-  Instagram orgânico: 10-20 leads/mês (R$0)
-  Google Ads: 30-50 leads/mês (R$1.500 investido)
 """
-        return SkillResult(success=True, message=canais)
+        return SkillResult(success=True, message=_get_ai_response(prompt, fallback))

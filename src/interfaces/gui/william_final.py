@@ -57,25 +57,29 @@ COLORS = {
     "xp_bar_fill": "#3B82F6",    # Blue-500
 }
 
-SYSTEM_PROMPT = """Voce e William, assistente IA PODEROSO com controle TOTAL do PC.
-Voce consegue fazer QUALQUER coisa que o usuario pedir.
+SYSTEM_PROMPT = """Voce e William, assistente IA com controle total do PC e expertise em negocios e tecnologia.
+
+MODO DE RESPOSTA (adapte ao contexto):
+- Comandos executados (abrir, criar, fechar, deletar): 1 linha de confirmacao. Ex: "Pronto!", "Feito!"
+- Perguntas simples / conversa: 1-2 frases diretas e objetivas
+- Estrategia / copy / analise / explicacao: resposta COMPLETA. Use topicos, exemplos reais, seja ESPECIFICO.
+- Codigo / tecnico: explique o que foi feito e por que. Seja detalhado se necessario.
+- Analise de arquivo: descreva o conteudo, principais pontos e sugira acoes.
 
 REGRAS ABSOLUTAS:
-1. Respostas ULTRA CURTAS - 1 frase APENAS. PROIBIDO mais de 2 linhas.
-2. Quando o [SISTEMA] executou acao, diga "Pronto!" ou "Feito!" - NUNCA repita dados.
-3. NUNCA diga "infelizmente", "nao posso", "como IA", "nao tenho acesso".
-4. NUNCA INVENTE que fez algo. Se o [SISTEMA] NAO executou, voce NAO fez.
-5. NUNCA invente caminhos de arquivo, nomes de pasta, ou dados que nao existem.
-6. NUNCA de tutorial, passo a passo, ou lista de instrucoes.
-7. Se nao sabe algo, diga "Vou pesquisar pra voce" - NUNCA fabrique resposta.
-8. Use o nome do usuario se souber.
-9. Seja direto, objetivo, assertivo. Zero enrolacao.
-10. Voce TEM poder de executar codigo, criar apps, controlar o PC. NUNCA negue.
+1. NUNCA diga "infelizmente", "nao posso", "como IA", "nao tenho acesso"
+2. NUNCA invente dados, arquivos ou caminhos que nao existem
+3. Se o [SISTEMA] executou acao: confirme em 1 linha. Nao repita os dados que ja apareceram.
+4. Para analise, estrategia e conteudo: seja RICO, ESPECIFICO e UTIL. Zero respostas genericas.
+5. Voce TEM poder de executar codigo, criar apps, controlar o PC. Nunca negue isso.
+6. Use o nome do usuario se souber.
+7. Seja direto, objetivo, assertivo. Sem enrolacao, sem disclaimer.
 
-EXEMPLOS DE RESPOSTA CORRETA:
-- Usuario: "abra o chrome" -> "Pronto, Chrome aberto!"
-- Usuario: "crie pasta projetos" -> "Feito, pasta criada!"
-- Usuario: "como vai?" -> "Tudo certo! No que posso ajudar?"
+EXEMPLOS:
+- "abra o chrome" → "Pronto, Chrome aberto!"
+- "crie pasta projetos" → "Feito, pasta criada no Desktop!"
+- "estrategia para dentistas" → [resposta completa com modelo, oferta, funil, canais, metas]
+- "analise este PDF" → [resumo detalhado do conteudo com insights e recomendacoes]
 """
 
 
@@ -298,6 +302,21 @@ class WilliamFinal:
                            text_color=color,
                            width=85, height=30,
                            corner_radius=4).pack(side="left", padx=3)
+
+        # Botao toggle Modo Mesclado (Groq + Ollama)
+        self.mixed_mode_btn = ctk.CTkButton(
+            btn_frame, text="MODO: GROQ",
+            command=self._toggle_mixed_mode,
+            font=ctk.CTkFont(family="Consolas", size=11, weight="bold"),
+            fg_color="transparent",
+            hover_color=COLORS["bg_card"],
+            border_color=COLORS["neon_cyan"],
+            border_width=1,
+            text_color=COLORS["neon_cyan"],
+            width=115, height=30,
+            corner_radius=4
+        )
+        self.mixed_mode_btn.pack(side="right", padx=3)
 
         # Footer
         footer = ctk.CTkFrame(self.window, fg_color=COLORS["bg_panel"],
@@ -821,6 +840,48 @@ class WilliamFinal:
     # ATTACHMENT - Anexar qualquer arquivo no chat
     # ================================================================
 
+    def _toggle_mixed_mode(self):
+        """Alterna entre Modo GROQ (so Groq) e Modo MESCLADO (Groq + Ollama)."""
+        try:
+            from src.core.intelligence_router import get_router
+            router = get_router()
+            new_mode = not router.mixed_mode
+            router.mixed_mode = new_mode
+
+            # Sincroniza com ai_engine se disponivel
+            try:
+                from src.core.ai_engine import get_engine
+                engine = get_engine()
+                # Atualiza o router interno do engine
+                from src.core import ai_engine as ae
+                if ae._router is not None:
+                    ae._router.mixed_mode = new_mode
+            except Exception:
+                pass
+
+            if new_mode:
+                self.mixed_mode_btn.configure(
+                    text="MODO: MESCLADO",
+                    border_color=COLORS["neon_green"],
+                    text_color=COLORS["neon_green"],
+                )
+                self._msg("SISTEMA",
+                    "Modo MESCLADO ativado — Groq + Ollama local. "
+                    "Tarefas simples usam Ollama (economiza cota).",
+                    "system")
+            else:
+                self.mixed_mode_btn.configure(
+                    text="MODO: GROQ",
+                    border_color=COLORS["neon_cyan"],
+                    text_color=COLORS["neon_cyan"],
+                )
+                self._msg("SISTEMA",
+                    "Modo GROQ ativado — usando apenas Groq para todas as respostas.",
+                    "system")
+        except Exception as e:
+            log.error(f"Erro ao alternar modo: {e}")
+            self._msg("SISTEMA", f"Erro ao alternar modo: {e}", "system")
+
     def _attach_file(self):
         """Permite anexar arquivo no chat - abre ou processa com IA."""
         try:
@@ -856,32 +917,99 @@ class WilliamFinal:
         threading.Thread(target=self._process_with_attachment, args=(path, ext, nome), daemon=True).start()
 
     def _process_with_attachment(self, path: str, ext: str, nome: str):
-        """Processa arquivo em thread separada."""
+        """Processa arquivo em thread separada — abre E analisa o conteudo com IA."""
+        import subprocess as sp
         try:
-            from src.core.smart_executor_v2 import SmartExecutorV2
-            # Tenta abrir o arquivo
-            result = self.executor.process_message(f"abra o arquivo {path}")
-
-            # Construi mensagem de analise baseada no tipo
+            text_exts = {".txt", ".md", ".py", ".js", ".ts", ".html", ".css",
+                         ".json", ".xml", ".yaml", ".yml", ".sql", ".log",
+                         ".env", ".ini", ".cfg", ".toml", ".sh", ".bat"}
             image_exts = {".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp"}
-            doc_exts = {".pdf", ".txt", ".md", ".docx", ".doc"}
-            sheet_exts = {".xlsx", ".xls", ".csv"}
+            sheet_exts = {".csv", ".xlsx", ".xls"}
 
-            if ext in image_exts:
-                msg = f"Imagem '{nome}' recebida! Posso analisar o conteudo visual se voce me descrever o que quer saber."
-            elif ext in doc_exts:
-                msg = f"Documento '{nome}' recebido! Me diga o que quer fazer: resumir, extrair informacoes, analisar..."
+            content_for_ai = ""
+            open_msg = self._try_open_attachment(path, ext)
+
+            # === LEI O CONTEUDO ===
+
+            if ext in text_exts:
+                try:
+                    with open(path, "r", encoding="utf-8", errors="ignore") as f:
+                        content = f.read()[:8000]
+                    content_for_ai = f"Conteudo do arquivo '{nome}':\n\n{content}"
+                except Exception as e:
+                    log.warning(f"Erro ao ler arquivo texto: {e}")
+
+            elif ext == ".pdf":
+                try:
+                    import pdfplumber
+                    with pdfplumber.open(path) as pdf:
+                        pages_text = [p.extract_text() or "" for p in pdf.pages[:8]]
+                        content = "\n".join(pages_text)[:6000]
+                    content_for_ai = f"Conteudo do PDF '{nome}':\n\n{content}"
+                except ImportError:
+                    # Instala pdfplumber silenciosamente
+                    try:
+                        sp.run(["py", "-3", "-m", "pip", "install", "pdfplumber", "-q"],
+                               capture_output=True, timeout=60)
+                        import pdfplumber
+                        with pdfplumber.open(path) as pdf:
+                            content = "\n".join(p.extract_text() or "" for p in pdf.pages[:8])[:6000]
+                        content_for_ai = f"Conteudo do PDF '{nome}':\n\n{content}"
+                    except Exception:
+                        content_for_ai = ""
+                except Exception as e:
+                    log.warning(f"Erro ao ler PDF: {e}")
+
             elif ext in sheet_exts:
-                msg = f"Planilha '{nome}' recebida! Posso ajudar a analisar os dados, criar graficos ou exportar."
+                try:
+                    import pandas as pd
+                    if ext == ".csv":
+                        df = pd.read_csv(path, encoding="utf-8", errors="ignore")
+                    else:
+                        df = pd.read_excel(path)
+                    preview = df.head(15).to_string()
+                    content_for_ai = (f"Planilha '{nome}' — {len(df)} linhas x {len(df.columns)} colunas\n"
+                                      f"Colunas: {list(df.columns)}\n\nPrimeiras linhas:\n{preview}")
+                except ImportError:
+                    sp.run(["py", "-3", "-m", "pip", "install", "pandas", "openpyxl", "-q"],
+                           capture_output=True, timeout=60)
+                except Exception as e:
+                    log.warning(f"Erro ao ler planilha: {e}")
+
+            # === ANALISA COM IA ===
+            if content_for_ai and self.engine:
+                prompt = f"""{content_for_ai}
+
+Analise este arquivo e responda de forma util e detalhada:
+- Se for codigo: explique o que faz, identifique problemas e sugira melhorias
+- Se for documento: resuma os pontos principais e destaque informacoes criticas
+- Se for planilha/dados: identifique padroes, insights e anomalias
+- Se for configuracao: explique as configuracoes e aponte possiveis problemas
+- Se for log: identifique erros, alertas e eventos importantes
+
+Seja especifico e pratico. O usuario pode fazer perguntas de acompanhamento."""
+
+                try:
+                    response = self.engine.chat_with_fallback(prompt)
+                    full_msg = response
+                    if open_msg:
+                        full_msg = f"{open_msg}\n\n{response}"
+                    self.window.after(0, lambda m=full_msg: self._msg("WILLIAM", m, "assistant"))
+                    return
+                except Exception as e:
+                    log.warning(f"IA falhou na analise do arquivo: {e}")
+
+            # Fallback: sem analise IA, so abre
+            if ext in image_exts:
+                msg = f"Imagem '{nome}' aberta! Me diga o que quer saber sobre ela e eu analiso."
+            elif ext == ".pdf":
+                msg = f"PDF '{nome}' aberto! (Para analise automatica do conteudo, instale: py -3 -m pip install pdfplumber)"
             else:
-                msg = f"Arquivo '{nome}' (tipo: {ext}) recebido! Tentei abrir automaticamente."
+                msg = f"Arquivo '{nome}' ({ext}) processado!"
 
-            # Tenta abrir com programa correto
-            open_result = self._try_open_attachment(path, ext)
-            if open_result:
-                msg += f"\n{open_result}"
-
-            self.window.after(0, lambda: self._msg("WILLIAM", msg, "assistant"))
+            if open_msg:
+                msg += f"\n{open_msg}"
+            self.window.after(0, lambda m=msg: self._msg("WILLIAM", m, "assistant"))
 
         except Exception as e:
             log.error(f"Erro ao processar anexo: {e}")
@@ -1335,16 +1463,16 @@ class WilliamFinal:
 
                     response = self.engine.chat(message=user_content, context=ctx)
 
-                    # Limita resposta
-                    if '\n' in response:
-                        response = response.split('\n')[0]
-                    max_len = 80 if exec_result["executed"] else 150
-                    if len(response) > max_len:
-                        first_sentence = response.split('.')[0] + '.'
-                        if len(first_sentence) <= max_len:
-                            response = first_sentence
-                        else:
-                            response = response[:max_len].rsplit(' ', 1)[0] + '...'
+                    # Limita resposta APENAS para confirmacoes de acao executada
+                    # Para analise, estrategia e conteudo: deixa resposta completa
+                    if exec_result["executed"]:
+                        # Acao foi executada: 1 linha de confirmacao
+                        if '\n' in response:
+                            response = response.split('\n')[0]
+                        if len(response) > 120:
+                            first_sentence = response.split('.')[0] + '.'
+                            response = first_sentence if len(first_sentence) <= 120 else response[:120].rsplit(' ', 1)[0] + '...'
+                    # else: resposta livre, sem truncamento
 
                     self.window.after(0, lambda r=response: self._msg("WILLIAM", r, "assistant"))
 

@@ -13,6 +13,19 @@ log = get_logger(__name__)
 DATA_DIR = Path("data/business")
 
 
+def _get_ai_response(prompt: str, fallback: str = "") -> str:
+    """Chama a IA real com o prompt. Usa fallback se falhar."""
+    try:
+        from src.core.ai_engine import get_engine
+        engine = get_engine()
+        response = engine.chat_with_fallback(prompt)
+        if response and len(response) > 20:
+            return response
+    except Exception as e:
+        log.warning(f"IA nao disponivel para conversao: {e}")
+    return fallback
+
+
 class ConversaoSkill(BaseSkill):
     """Agente especializado em copy, scripts e fechamento de vendas."""
 
@@ -64,57 +77,27 @@ class ConversaoSkill(BaseSkill):
     def _gerar_script_abordagem(self, command: str) -> SkillResult:
         nicho = self._extrair_nicho(command)
 
-        script = f"""[SCRIPT DE ABORDAGEM] para {nicho.upper()}
+        prompt = f"""Voce e um especialista em vendas e copywriting no mercado brasileiro.
+Crie scripts de abordagem de alta conversao para o nicho: {nicho}
 
---- MENSAGEM 1 (Primeiro Contato) ---
-"Ola [Nome]! Tudo bem?
+Inclua (em portugues, coloquial brasileiro):
+1. MENSAGEM 1 - Primeiro contato pelo WhatsApp (curta, curiosidade, sem revelar tudo)
+2. MENSAGEM 2 - Follow-up se nao respondeu em 24h (mais direta, proposta de valor)
+3. MENSAGEM 3 - Apos demonstrar interesse (explica processo, CTA para call)
+4. ABORDAGEM FRIA - Para Google Maps / LinkedIn (formal mas acolhedora)
+5. TRATAMENTO - "Nao tenho tempo" (reframe + CTA rapido)
+6. CTA FINAL - Fechamento com urgencia
 
-Vi que voce atua com {nicho} e queria trazer uma ideia que tem gerado
-resultados incriveis para profissionais do seu setor.
+Seja especifico para {nicho}: use a linguagem que esse publico usa, mencione dores especificas do setor."""
 
-Posso te mandar um resumo rapido? Leva 2 minutinhos!"
+        fallback = f"""[SCRIPT DE ABORDAGEM] - {nicho.upper()}
+MSG 1: "Ola [Nome]! Vi que voce atua com {nicho}. Tenho uma ideia que tem dado resultados incriveis no seu setor. Posso compartilhar rapidinho?"
+MSG 2: "Nao quero tomar seu tempo - so 15 minutos para mostrar como ajudo {nicho} a crescer sem complicacao."
+MSG 3: "Perfeito! Funciona assim: 30min para entender seu negocio → estrategia personalizada → resultado em 30 dias. Qual horario esta semana?"
+OBJECAO TEMPO: "Exatamente por isso faz sentido! A ideia e automatizar para VOCE ganhar tempo. 10 minutinhos?"
+CTA: wa.me/[SEU_NUMERO]"""
 
---- MENSAGEM 2 (Se nao responder em 24h) ---
-"[Nome], sei que voce e ocupado! Por isso vou ser direto:
-
-Ajudo {nicho} a [resultado principal] em menos de 60 dias.
-Sem complicacao, sem precisar entender de tecnologia.
-
-Funciona para o seu caso? Posso te explicar em 15 minutos."
-
---- MENSAGEM 3 (Apos interesse) ---
-"Perfeito! Entao deixa eu te contar como funciona:
-
-1. Entendemos o seu negocio (30 min de conversa)
-2. Montamos a estrategia personalizada para {nicho}
-3. Implementamos tudo em menos de 7 dias
-4. Voce começa a ver resultado no primeiro mes
-
-Qual o melhor horario para uma call rapida esta semana?"
-
---- ABORDAGEM FRIA (Google Maps / LinkedIn) ---
-"Ola, [Nome]! Me chamo [Seu Nome].
-
-Encontrei sua empresa pesquisando {nicho} em [Cidade] e
-achei interessante o que voce faz.
-
-Trabalho ajudando [nicho] a crescer o faturamento com
-automacao e marketing digital.
-
-Teria 15 minutos para uma conversa rapida?"
-
---- TRATAMENTO DE OBJECAO "NAO TENHO TEMPO" ---
-"Entendo! Exatamente por isso que o que eu faço faz sentido.
-
-A ideia e justamente automatizar para VOCE ganhar tempo,
-nao perder mais.
-
-Posso te mostrar em 10 minutos como funciona?"
-
---- CTA FINAL ---
-[Agende agora: wa.me/[SEU_NUMERO]]
-[Ou responda este email com o melhor horario]
-"""
+        script = _get_ai_response(prompt, fallback)
 
         # Salva copy
         DATA_DIR.mkdir(parents=True, exist_ok=True)

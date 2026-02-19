@@ -1,46 +1,48 @@
 {
   "user_preferences": {},
   "learned_commands": {},
-  "interaction_count": 75,
+  "interaction_count": 87,
   "personality": {
     "nome": "William",
     "humor": "confiante",
     "estilo": "direto e eficiente",
-    "nivel": 4,
-    "xp": 79,
-    "titulo": "Assistente Capaz",
+    "nivel": 5,
+    "xp": 91,
+    "titulo": "Assistente Experiente",
     "criado_em": "2026-02-17T11:20:34.184859",
     "tracos": [
-      "prestativo",
       "eficiente",
-      "objetivo",
       "veterano",
-      "descontraido"
+      "descontraido",
+      "prestativo",
+      "objetivo"
     ]
   },
   "user_info": {},
   "frequent_actions": {
     "disk": 3,
     "search": 6,
-    "battery": 5,
+    "battery": 6,
     "wifi": 2,
     "system_info": 1,
     "screenshot": 1,
-    "network": 2,
+    "network": 3,
     "command": 2,
     "create_folder": 3,
     "create_file": 1,
     "create_script": 4,
     "cleanup": 1,
     "datetime": 1,
-    "process_list": 2,
-    "web_answer": 6,
+    "process_list": 3,
+    "web_answer": 7,
     "close_app": 2,
     "list": 2,
-    "ai_generate": 15,
-    "ai_execute": 6,
+    "ai_generate": 19,
+    "ai_execute": 7,
     "power": 1,
-    "skill_web": 1
+    "skill_web": 1,
+    "skill_general": 1,
+    "open_app": 2
   },
   "corrections": [],
   "conversation_patterns": {
@@ -119,34 +121,48 @@
       148,
       67,
       2,
-      55
+      55,
+      44,
+      34,
+      18,
+      82,
+      13,
+      7,
+      29,
+      25,
+      19,
+      24,
+      12,
+      16
     ],
     "informal": 9,
     "urgente": 3,
     "tecnico": 1
   },
   "topics_discussed": {
-    "rede": 6,
+    "rede": 9,
     "arquivos": 10,
-    "sistema": 5,
+    "sistema": 6,
     "programacao": 1,
-    "diversao": 13,
+    "diversao": 14,
     "navegacao": 1
   },
   "time_stats": {
     "horarios_ativos": {
-      "11": 33,
+      "11": 36,
       "12": 4,
       "14": 5,
       "15": 8,
       "16": 10,
       "17": 1,
-      "18": 1,
+      "18": 9,
       "19": 1,
-      "20": 12
+      "20": 13
     },
     "dias_ativos": {
-      "Tuesday": 75
+      "Tuesday": 76,
+      "Wednesday": 8,
+      "Thursday": 3
     }
   },
   "command_aliases": {
@@ -207,7 +223,8 @@
       "pesquise sobre bitcoin",
       "o que e machine learning",
       "melhore com formatos de carros e coloque competidores e coloque rankig e, depois",
-      "o que significa 31 que vc disse ali em cima?"
+      "o que significa 31 que vc disse ali em cima?",
+      "opa blzaa quais as noticias de hj?"
     ],
     "close_app": [
       "feche a calculadora que eesta aberta",
@@ -227,7 +244,11 @@
       "cade o jogo?",
       "crie o game com esses comandos ai",
       "crie um jogo de truco pra duas pessoas, crie completo e funcional e bonito!",
-      "crie um jogo de forca com lindo grafico o melhor que vc conseguir criar"
+      "crie um jogo de forca com lindo grafico o melhor que vc conseguir criar",
+      "crie um jogo de corrida 3d funcional com semafora na saida , as setas pra dirigi",
+      "crie funil para marketing",
+      "crie funil para dentista",
+      "ver pipeline"
     ],
     "ai_execute": [
       "esta aberto ainda, tem duas",
@@ -235,18 +256,26 @@
       "telegram esta configura ou nao?",
       "quais as ultimas alterações feita ?",
       "qual se nivel de inteligencial atual?",
-      "vamos instalar outra ia pra vc ter mais poder ai? alem do groq , vamos ter mais "
+      "vamos instalar outra ia pra vc ter mais poder ai? alem do groq , vamos ter mais ",
+      "listar workflows"
     ],
     "power": [
       "melhore , e coloque pra quando terminar reiniciar o jogo, melhore a qualidade gr"
     ],
     "skill_web": [
       "como esta sua inteligencia?"
+    ],
+    "skill_general": [
+      "qual as principais noticiasi de ultmas 4 hrs"
+    ],
+    "open_app": [
+      "abra a calculadora",
+      "abrir a calculadora"
     ]
   },
   "success_rate": {
-    "total": 67,
-    "success": 67
+    "total": 79,
+    "success": 79
   },
   "vocabulary": {
     "quanto": 3,
@@ -264,15 +293,15 @@
     "cada": 1,
     "nova": 1,
     "interação": 1,
-    "quais": 5,
-    "principais": 2,
-    "noticias": 2,
+    "quais": 7,
+    "principais": 3,
+    "noticias": 3,
     "meia": 7,
     "noite": 1,
     "agora": 1,
     "sobre": 5,
     "politica": 1,
-    "mostre": 6,
+    "mostre": 7,
     "procure": 1,
     "pasta": 5,
     "nome": 2,
@@ -289,13 +318,13 @@
     "aplicativo": 7,
     "completo": 2,
     "simples": 2,
-    "crie": 23,
+    "crie": 26,
     "apenas": 1,
     "testar": 1,
     "deixe": 1,
     "arquivo": 1,
     "pronto": 1,
-    "bateria": 5,
+    "bateria": 6,
     "senha": 2,
     "wifi": 2,
     "memoria": 1,
@@ -304,7 +333,7 @@
     "agorafoi": 1,
     "chamada": 2,
     "projetos": 1,
-    "calculadora": 2,
+    "calculadora": 4,
     "python": 1,
     "ultimas": 2,
     "brasil": 1,
@@ -316,14 +345,14 @@
     "espaco": 1,
     "disco": 1,
     "horas": 1,
-    "programas": 2,
-    "estao": 3,
-    "abertos": 2,
+    "programas": 3,
+    "estao": 4,
+    "abertos": 3,
     "meusprojetos": 1,
     "elon": 1,
     "musk": 1,
-    "jogo": 11,
-    "corrida": 6,
+    "jogo": 12,
+    "corrida": 7,
     "estilo": 2,
     "mario": 2,
     "kart": 2,
@@ -358,10 +387,10 @@
     "temos": 1,
     "ficou": 1,
     "ligado": 1,
-    "funcional": 2,
+    "funcional": 3,
     "controlar": 1,
     "teclas": 1,
-    "setas": 1,
+    "setas": 2,
     "melhore": 3,
     "terminar": 1,
     "reiniciar": 1,
@@ -409,6 +438,18 @@
     "aperfeçoar": 1,
     "nossa": 1,
     "pronta": 1,
-    "melhorar": 1
+    "melhorar": 1,
+    "noticiasi": 1,
+    "ultmas": 1,
+    "blzaa": 1,
+    "semafora": 1,
+    "saida": 1,
+    "dirigir": 1,
+    "funil": 2,
+    "marketing": 1,
+    "dentista": 1,
+    "pipeline": 1,
+    "listar": 1,
+    "workflows": 1
   }
 }
