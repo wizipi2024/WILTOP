@@ -14,7 +14,21 @@
       "Bash(git commit:*)",
       "Bash(git config:*)",
       "Bash(git rm:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(ls \"C:\\\\Users\\\\wizip\\\\Desktop\\\\WILTOP\\\\config\\\\playbooks\"\" 2>/dev/null || echo \"Directory does not exist \")",
+      "Bash(cmd.exe /c \"py -3 test_quick.py 2>&1\")",
+      "Bash(cmd.exe /c \"cd C:\\\\Users\\\\wizip\\\\Desktop\\\\WILTOP && py -3 test_quick.py 2>&1\")",
+      "Bash(cmd.exe /c \"cd C:\\\\Users\\\\wizip\\\\Desktop\\\\WILTOP && py -3 test_quick.py\")",
+      "Bash(echo:*)",
+      "Bash(cmd /c \"if exist \"\"C:\\\\Users\\\\wizip\\\\Desktop\\\\WILTOP\\\\src\\\\core\\\\quality_gate.py\"\" \\(echo FOUND: quality_gate.py\\) else \\(echo MISSING: quality_gate.py\\)\")",
+      "Bash(cmd /c \"if exist \"\"C:\\\\Users\\\\wizip\\\\Desktop\\\\WILTOP\\\\config\\\\playbooks\\\\monetizacao.json\"\" \\(echo FOUND: monetizacao.json\\) else \\(echo MISSING: monetizacao.json\\)\")",
+      "Bash(cmd /c \"if exist \"\"C:\\\\Users\\\\wizip\\\\Desktop\\\\WILTOP\\\\src\\\\skills\\\\business\\\\n8n_skill.py\"\" \\(echo FOUND: n8n_skill.py\\) else \\(echo MISSING: n8n_skill.py\\)\")",
+      "Bash(cmd /c \"if exist \"\"C:\\\\Users\\\\wizip\\\\Desktop\\\\WILTOP\\\\src\\\\skills\\\\business\\\\vscode_skill.py\"\" \\(echo FOUND: vscode_skill.py\\) else \\(echo MISSING: vscode_skill.py\\)\")",
+      "Bash(cmd /c \"if exist \"\"C:\\\\Users\\\\wizip\\\\Desktop\\\\WILTOP\\\\src\\\\skills\\\\business\\\\estrategia_skill.py\"\" \\(echo FOUND: estrategia_skill.py\\) else \\(echo MISSING: estrategia_skill.py\\)\")",
+      "Bash(powershell -Command \"\n$files = @\\(\n  ''C:\\\\Users\\\\wizip\\\\Desktop\\\\WILTOP\\\\test_quick.py'',\n  ''C:\\\\Users\\\\wizip\\\\Desktop\\\\WILTOP\\\\test_overhaul_final.py'',\n  ''C:\\\\Users\\\\wizip\\\\Desktop\\\\WILTOP\\\\src\\\\core\\\\quality_gate.py'',\n  ''C:\\\\Users\\\\wizip\\\\Desktop\\\\WILTOP\\\\config\\\\playbooks\\\\monetizacao.json'',\n  ''C:\\\\Users\\\\wizip\\\\Desktop\\\\WILTOP\\\\src\\\\skills\\\\business\\\\n8n_skill.py'',\n  ''C:\\\\Users\\\\wizip\\\\Desktop\\\\WILTOP\\\\src\\\\skills\\\\business\\\\vscode_skill.py'',\n  ''C:\\\\Users\\\\wizip\\\\Desktop\\\\WILTOP\\\\src\\\\skills\\\\business\\\\estrategia_skill.py''\n\\)\nforeach \\($f in $files\\) {\n  if \\(Test-Path $f\\) { Write-Output \"\"FOUND:   $f\"\" } else { Write-Output \"\"MISSING: $f\"\" }\n}\n\")",
+      "Bash(powershell -Command:*)",
+      "Bash(git restore:*)",
+      "Bash(del \"C:\\\\Users\\\\wizip\\\\Desktop\\\\WILTOP\\\\config\\\\playbooks\\\\monetizacao.json\")"
     ]
   }
 }

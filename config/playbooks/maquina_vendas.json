@@ -1,0 +1,44 @@
+{
+  "name": "maquina_vendas",
+  "display_name": "Criar Maquina de Vendas",
+  "description": "Monta toda a estrutura de vendas para um nicho: estrategia, copy, funil e leads",
+  "trigger_patterns": [
+    "(?:quero|preciso|vou)\\s+(?:vender|faturar)\\s+(.+)",
+    "(?:criar|montar|fazer)\\s+(?:maquina|sistema)\\s+(?:de\\s+)?(?:vendas|receita)(?:\\s+(.+))?",
+    "(?:criar|montar)\\s+funil\\s+(?:para|de)\\s+(.+)",
+    "maquina\\s+de\\s+vendas\\s+(?:para\\s+)?(.+)"
+  ],
+  "variables": ["nicho"],
+  "steps": [
+    {
+      "action": "skill_business",
+      "description": "defina estrategia para {topic}",
+      "params": {"skill": "estrategia"},
+      "agent": "strategy_agent",
+      "timeout": 30
+    },
+    {
+      "action": "skill_business",
+      "description": "gere script para {topic}",
+      "params": {"skill": "conversao"},
+      "agent": "conversion_agent",
+      "timeout": 30
+    },
+    {
+      "action": "skill_business",
+      "description": "crie funil para {topic}",
+      "params": {"skill": "n8n"},
+      "agent": "n8n_agent",
+      "timeout": 60
+    },
+    {
+      "action": "skill_business",
+      "description": "encontre clientes {topic}",
+      "params": {"skill": "prospeccao"},
+      "agent": "business_agent",
+      "timeout": 60
+    }
+  ],
+  "category": "monetizacao",
+  "enabled": true
+}

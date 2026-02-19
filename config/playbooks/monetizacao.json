@@ -1,0 +1,118 @@
+[
+  {
+    "name": "Criar Maquina de Vendas Completa",
+    "description": "Monta toda a estrutura de vendas para um nicho: estrategia, copy, funil, leads e app",
+    "triggers": [
+      "quero vender", "criar funil", "montar maquina", "preciso vender",
+      "maquina de vendas", "sistema de vendas", "quero faturar", "comecar a vender"
+    ],
+    "steps": [
+      "ESTRATEGIA: definir nicho, oferta e ticket ideal para o negocio",
+      "COPY: gerar 10 mensagens de abordagem personalizadas",
+      "N8N: criar workflow de captura + follow-up automatico de 7 dias",
+      "PROSPECCAO: buscar primeiros 20 leads qualificados no nicho",
+      "APP: criar landing page do funil para captura de leads",
+      "RELATORIO: configurar metricas e KPIs de conversao"
+    ],
+    "estimated_time": "5-10 minutos",
+    "output_files": [
+      "data/business/estrategia_atual.json",
+      "data/business/ultimo_script.txt",
+      "data/n8n/workflow_*.json",
+      "data/leads/*.csv",
+      "data/apps/landing_page_*/index.html"
+    ]
+  },
+  {
+    "name": "Prospeccao Automatica",
+    "description": "Busca leads qualificados, personaliza mensagem e prepara disparos escalonados",
+    "triggers": [
+      "encontre clientes", "preciso de leads", "prospectar", "buscar clientes",
+      "lista de contatos", "quero clientes", "achar clientes", "base de leads"
+    ],
+    "steps": [
+      "PROSPECCAO: buscar leads no nicho informado (Google Maps + busca web)",
+      "COPY: personalizar mensagem de abordagem por lead",
+      "N8N: criar workflow de disparo escalonado (5 por dia)",
+      "CRM: salvar e organizar contatos no pipeline"
+    ],
+    "estimated_time": "2-5 minutos",
+    "output_files": [
+      "data/leads/{nicho}_{cidade}.csv",
+      "data/leads/pipeline_atual.json"
+    ]
+  },
+  {
+    "name": "Criar App para Vender",
+    "description": "Desenvolve um app ou ferramenta completa usando VS Code e IA",
+    "triggers": [
+      "crie um app", "desenvolva um sistema", "quero uma ferramenta",
+      "crie uma landing page", "faca um site", "desenvolva um app",
+      "construa uma plataforma", "crie um crm", "faca uma calculadora"
+    ],
+    "steps": [
+      "VSCODE: abrir editor e criar estrutura do projeto",
+      "AI: gerar codigo completo baseado na descricao",
+      "QUALIDADE: avaliar e aprovar resultado (Quality Gate)",
+      "EXECUTAR: rodar app automaticamente e entregar URL"
+    ],
+    "estimated_time": "3-8 minutos",
+    "output_files": [
+      "data/apps/{nome_projeto}/"
+    ]
+  },
+  {
+    "name": "Gerar Copy Completo",
+    "description": "Cria todos os materiais de copy para um nicho: scripts, sequencias e propostas",
+    "triggers": [
+      "gere copy", "crie mensagens", "quero scripts", "gerar abordagem",
+      "criar sequencia", "escrever mensagens", "copy para", "script de vendas"
+    ],
+    "steps": [
+      "COPY: gerar script de abordagem inicial personalizado",
+      "COPY: criar sequencia de 7 mensagens de follow-up",
+      "COPY: desenvolver tratamento de 5 objecoes principais",
+      "COPY: montar proposta comercial profissional"
+    ],
+    "estimated_time": "2-4 minutos",
+    "output_files": [
+      "data/business/ultimo_script.txt"
+    ]
+  },
+  {
+    "name": "Estrategia de Negocio Completa",
+    "description": "Define posicionamento, oferta, avatar e funil para um nicho",
+    "triggers": [
+      "defina estrategia", "qual a estrategia", "como vender para", "modelo de negocio",
+      "estruturar negocio", "planejar vendas", "como monetizar", "como faturar com"
+    ],
+    "steps": [
+      "ESTRATEGIA: definir modelo de negocio, ticket ideal e ciclo de venda",
+      "ESTRATEGIA: criar avatar do cliente ideal (ICP) com dores e desejos",
+      "ESTRATEGIA: montar funil completo (topo, meio e fundo)",
+      "ESTRATEGIA: sugerir canais de aquisicao organico e pago"
+    ],
+    "estimated_time": "1-3 minutos",
+    "output_files": [
+      "data/business/estrategia_atual.json"
+    ]
+  },
+  {
+    "name": "Criar Automacao n8n",
+    "description": "Gera e ativa fluxos de automacao no n8n para captura, qualificacao e follow-up",
+    "triggers": [
+      "criar automacao", "automatizar", "configurar n8n", "fazer fluxo",
+      "criar workflow", "automatizar follow-up", "criar funil automatico"
+    ],
+    "steps": [
+      "N8N: criar workflow de captura de leads via webhook",
+      "N8N: adicionar sequencia de follow-up automatica",
+      "N8N: configurar qualificacao automatica por score",
+      "N8N: ativar e testar o workflow"
+    ],
+    "estimated_time": "2-5 minutos",
+    "output_files": [
+      "data/n8n/workflow_*.json"
+    ]
+  }
+]

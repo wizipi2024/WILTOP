@@ -221,6 +221,10 @@ class WilliamFinal:
         tab_dash = self.tabview.add("  DASHBOARD  ")
         self._setup_dashboard_tab(tab_dash)
 
+        # Aba 4: Receita (Business Intelligence + Leads + Funis)
+        tab_receita = self.tabview.add("  RECEITA  ")
+        self._setup_receita_tab(tab_receita)
+
         # ===== INPUT AREA =====
         input_outer = ctk.CTkFrame(self.window, fg_color=COLORS["bg_panel"],
                                     corner_radius=0)
@@ -233,6 +237,19 @@ class WilliamFinal:
         ctk.CTkLabel(input_frame, text=">_",
                      font=ctk.CTkFont(family="Consolas", size=18, weight="bold"),
                      text_color=COLORS["neon_cyan"]).pack(side="left", padx=(0, 8))
+
+        # Botao de anexar arquivo
+        self.attach_btn = ctk.CTkButton(input_frame, text="📎",
+                                         command=self._attach_file,
+                                         font=ctk.CTkFont(size=18),
+                                         height=45, width=50,
+                                         fg_color=COLORS["bg_card"],
+                                         hover_color=COLORS["bg_panel"],
+                                         border_color=COLORS["border"],
+                                         border_width=1,
+                                         text_color=COLORS["text_primary"],
+                                         corner_radius=4)
+        self.attach_btn.pack(side="left", padx=(0, 8))
 
         self.input = ctk.CTkEntry(input_frame,
                                    placeholder_text="Digite qualquer coisa... William faz TUDO.",
@@ -288,7 +305,7 @@ class WilliamFinal:
         footer.pack(fill="x", side="bottom")
         footer.pack_propagate(False)
 
-        ctk.CTkLabel(footer, text="  WILLIAM v4 | GROQ LLAMA 3.3 70B | ORCHESTRATOR + AI BRAIN + 35 DETECTORS + WEB SEARCH + SCHEDULER",
+        ctk.CTkLabel(footer, text="  WILLIAM v5 | GROQ LLAMA 3.3 70B | ORCHESTRATOR + QUALITY GATE + 5 SKILLS BUSINESS + N8N + VSCODE + LEADS",
                      font=ctk.CTkFont(family="Consolas", size=9),
                      text_color=COLORS["text_dim"]).pack(side="left")
 
@@ -532,6 +549,383 @@ class WilliamFinal:
 
         # Popula dashboard inicial
         self.window.after(2000, self._refresh_dashboard)
+
+    # ================================================================
+    # ABA RECEITA - Business Intelligence + Leads + Funis
+    # ================================================================
+
+    def _setup_receita_tab(self, parent):
+        """Monta a aba RECEITA com painel de negocios completo."""
+        scroll = ctk.CTkScrollableFrame(parent, fg_color=COLORS["bg_dark"])
+        scroll.pack(fill="both", expand=True, padx=5, pady=5)
+
+        # Header da aba
+        header = ctk.CTkFrame(scroll, fg_color=COLORS["bg_card"],
+                               corner_radius=6, height=40)
+        header.pack(fill="x", pady=(0, 10))
+        header.pack_propagate(False)
+
+        ctk.CTkLabel(header, text="  MAQUINA AUTONOMA DE GERACAO DE RECEITA",
+                     font=ctk.CTkFont(family="Consolas", size=12, weight="bold"),
+                     text_color=COLORS["warning"]).pack(side="left", padx=10)
+
+        ctk.CTkButton(header, text="REFRESH",
+                       command=self._refresh_receita,
+                       font=ctk.CTkFont(family="Consolas", size=9, weight="bold"),
+                       fg_color=COLORS["warning"],
+                       hover_color=COLORS["neon_orange"],
+                       text_color=COLORS["bg_dark"],
+                       width=70, height=26, corner_radius=4).pack(side="right", padx=10)
+
+        # ===== LINHA 1: Botoes de acao rapida =====
+        action_header = ctk.CTkFrame(scroll, fg_color=COLORS["bg_card"],
+                                      corner_radius=4, height=28)
+        action_header.pack(fill="x", pady=(0, 5))
+        action_header.pack_propagate(False)
+        ctk.CTkLabel(action_header, text="  ACOES RAPIDAS",
+                     font=ctk.CTkFont(family="Consolas", size=10, weight="bold"),
+                     text_color=COLORS["neon_cyan"]).pack(side="left", padx=5)
+
+        action_frame = ctk.CTkFrame(scroll, fg_color=COLORS["bg_panel"],
+                                     corner_radius=4)
+        action_frame.pack(fill="x", pady=(0, 10), ipady=8)
+
+        business_buttons = [
+            ("+ NOVO FUNIL", lambda: self._receita_dialog("novo_funil"), COLORS["neon_green"]),
+            ("VER LEADS", lambda: self._receita_dialog("ver_leads"), COLORS["neon_blue"]),
+            ("GERAR COPY", lambda: self._receita_dialog("gerar_copy"), COLORS["neon_cyan"]),
+            ("CRIAR APP", lambda: self._receita_dialog("criar_app"), COLORS["neon_purple"]),
+            ("ESTRATEGIA", lambda: self._receita_dialog("estrategia"), COLORS["warning"]),
+            ("n8n FLOWS", lambda: self._receita_dialog("n8n_flows"), COLORS["neon_pink"]),
+        ]
+        for text, cmd, color in business_buttons:
+            ctk.CTkButton(action_frame, text=text, command=cmd,
+                           font=ctk.CTkFont(family="Consolas", size=11, weight="bold"),
+                           fg_color="transparent",
+                           hover_color=COLORS["bg_card"],
+                           border_color=color,
+                           border_width=1,
+                           text_color=color,
+                           width=100, height=35,
+                           corner_radius=4).pack(side="left", padx=5, pady=5)
+
+        # ===== LINHA 2: Metricas do dia =====
+        metrics_header = ctk.CTkFrame(scroll, fg_color=COLORS["bg_card"],
+                                       corner_radius=4, height=28)
+        metrics_header.pack(fill="x", pady=(0, 5))
+        metrics_header.pack_propagate(False)
+        ctk.CTkLabel(metrics_header, text="  METRICAS DE NEGOCIO",
+                     font=ctk.CTkFont(family="Consolas", size=10, weight="bold"),
+                     text_color=COLORS["neon_green"]).pack(side="left", padx=5)
+
+        self.receita_metrics_frame = ctk.CTkFrame(scroll, fg_color="transparent")
+        self.receita_metrics_frame.pack(fill="x", pady=(0, 10))
+
+        # ===== LINHA 3: Pipeline de Leads =====
+        pipeline_header = ctk.CTkFrame(scroll, fg_color=COLORS["bg_card"],
+                                        corner_radius=4, height=28)
+        pipeline_header.pack(fill="x", pady=(0, 5))
+        pipeline_header.pack_propagate(False)
+        ctk.CTkLabel(pipeline_header, text="  PIPELINE DE LEADS",
+                     font=ctk.CTkFont(family="Consolas", size=10, weight="bold"),
+                     text_color=COLORS["neon_orange"]).pack(side="left", padx=5)
+
+        self.pipeline_text = ctk.CTkTextbox(scroll,
+                                             font=ctk.CTkFont(family="Consolas", size=10),
+                                             wrap="word", state="disabled",
+                                             fg_color=COLORS["bg_panel"],
+                                             text_color=COLORS["text_primary"],
+                                             height=150, border_width=1,
+                                             border_color=COLORS["neon_orange"])
+        self.pipeline_text.pack(fill="x", pady=(0, 10))
+
+        # ===== LINHA 4: Workflows n8n Ativos =====
+        n8n_header = ctk.CTkFrame(scroll, fg_color=COLORS["bg_card"],
+                                   corner_radius=4, height=28)
+        n8n_header.pack(fill="x", pady=(0, 5))
+        n8n_header.pack_propagate(False)
+        ctk.CTkLabel(n8n_header, text="  WORKFLOWS n8n",
+                     font=ctk.CTkFont(family="Consolas", size=10, weight="bold"),
+                     text_color=COLORS["neon_purple"]).pack(side="left", padx=5)
+
+        self.n8n_text = ctk.CTkTextbox(scroll,
+                                        font=ctk.CTkFont(family="Consolas", size=10),
+                                        wrap="word", state="disabled",
+                                        fg_color=COLORS["bg_panel"],
+                                        text_color=COLORS["text_primary"],
+                                        height=120, border_width=1,
+                                        border_color=COLORS["neon_purple"])
+        self.n8n_text.pack(fill="x", pady=(0, 10))
+
+        # Popula dados iniciais
+        self.window.after(3000, self._refresh_receita)
+
+    def _refresh_receita(self):
+        """Atualiza a aba RECEITA com dados reais."""
+        try:
+            self._refresh_receita_metrics()
+            self._refresh_pipeline()
+            self._refresh_n8n_flows()
+        except Exception as e:
+            log.error(f"Erro ao atualizar aba Receita: {e}")
+
+    def _refresh_receita_metrics(self):
+        """Atualiza metricas de negocio."""
+        for widget in self.receita_metrics_frame.winfo_children():
+            widget.destroy()
+
+        row = ctk.CTkFrame(self.receita_metrics_frame, fg_color="transparent")
+        row.pack(fill="x")
+
+        # Conta leads
+        leads_total = 0
+        leads_hot = 0
+        try:
+            import json
+            pipeline_path = Path("data/leads/pipeline_atual.json")
+            if pipeline_path.exists():
+                leads = json.loads(pipeline_path.read_text(encoding="utf-8"))
+                leads_total = len(leads)
+                leads_hot = sum(1 for l in leads if l.get("score", 0) >= 80)
+        except Exception:
+            pass
+
+        # Conta workflows n8n
+        n8n_count = 0
+        try:
+            n8n_dir = Path("data/n8n")
+            if n8n_dir.exists():
+                n8n_count = len(list(n8n_dir.glob("*.json")))
+        except Exception:
+            pass
+
+        # Conta apps criados
+        apps_count = 0
+        try:
+            apps_dir = Path("data/apps")
+            if apps_dir.exists():
+                apps_count = len([d for d in apps_dir.iterdir() if d.is_dir()])
+        except Exception:
+            pass
+
+        metrics = [
+            ("LEADS TOTAL", str(leads_total), COLORS["neon_blue"]),
+            ("LEADS HOT", str(leads_hot), COLORS["neon_green"]),
+            ("WORKFLOWS", str(n8n_count), COLORS["neon_purple"]),
+            ("APPS CRIADOS", str(apps_count), COLORS["warning"]),
+        ]
+
+        for label, value, color in metrics:
+            card = ctk.CTkFrame(row, fg_color=COLORS["bg_card"],
+                                 corner_radius=6, width=130, height=65)
+            card.pack(side="left", padx=5, pady=3)
+            card.pack_propagate(False)
+
+            ctk.CTkLabel(card, text=value,
+                         font=ctk.CTkFont(family="Consolas", size=22, weight="bold"),
+                         text_color=color).pack(pady=(8, 0))
+            ctk.CTkLabel(card, text=label,
+                         font=ctk.CTkFont(family="Consolas", size=8),
+                         text_color=COLORS["text_secondary"]).pack()
+
+    def _refresh_pipeline(self):
+        """Atualiza lista de leads no pipeline."""
+        self.pipeline_text.configure(state="normal")
+        self.pipeline_text.delete("1.0", "end")
+
+        try:
+            import json
+            pipeline_path = Path("data/leads/pipeline_atual.json")
+            if not pipeline_path.exists():
+                self.pipeline_text.insert("end", "  Nenhum lead ainda.\n")
+                self.pipeline_text.insert("end", "  Use 'encontre clientes [nicho]' para comecar!\n")
+            else:
+                leads = json.loads(pipeline_path.read_text(encoding="utf-8"))
+                por_status = {}
+                for lead in leads:
+                    s = lead.get("status", "novo")
+                    por_status.setdefault(s, []).append(lead)
+
+                for status, lista in list(por_status.items())[:3]:
+                    self.pipeline_text.insert("end", f"\n  {status.upper()} ({len(lista)} leads):\n")
+                    for l in lista[:5]:
+                        score = l.get("score", "?")
+                        self.pipeline_text.insert(
+                            "end",
+                            f"    • {l['empresa'][:35]} | Score: {score}/100\n"
+                        )
+
+                self.pipeline_text.insert("end", f"\n  TOTAL: {len(leads)} leads no pipeline\n")
+        except Exception as e:
+            self.pipeline_text.insert("end", f"  Erro: {e}\n")
+
+        self.pipeline_text.configure(state="disabled")
+
+    def _refresh_n8n_flows(self):
+        """Atualiza lista de workflows n8n."""
+        self.n8n_text.configure(state="normal")
+        self.n8n_text.delete("1.0", "end")
+
+        try:
+            n8n_dir = Path("data/n8n")
+            if not n8n_dir.exists() or not list(n8n_dir.glob("*.json")):
+                self.n8n_text.insert("end", "  Nenhum workflow criado ainda.\n")
+                self.n8n_text.insert("end", "  Use 'crie funil para [nicho]' para gerar!\n")
+            else:
+                import json
+                for f in sorted(n8n_dir.glob("*.json"))[-5:]:
+                    try:
+                        data = json.loads(f.read_text(encoding="utf-8"))
+                        name = data.get("name", f.stem)
+                        nodes = len(data.get("nodes", []))
+                        self.n8n_text.insert("end", f"  • {name} | {nodes} nodes\n")
+                        self.n8n_text.insert("end", f"    Arquivo: {f.name}\n\n")
+                    except Exception:
+                        self.n8n_text.insert("end", f"  • {f.name}\n")
+        except Exception as e:
+            self.n8n_text.insert("end", f"  Erro: {e}\n")
+
+        self.n8n_text.configure(state="disabled")
+
+    def _receita_dialog(self, action: str):
+        """Abre dialog para acoes de negocio e envia comando ao chat."""
+        commands = {
+            "novo_funil": "crie funil para ",
+            "ver_leads": "ver pipeline",
+            "gerar_copy": "gere script para ",
+            "criar_app": "crie um app de landing page para ",
+            "estrategia": "defina estrategia para ",
+            "n8n_flows": "listar workflows",
+        }
+        cmd = commands.get(action, "")
+
+        needs_input = action in {"novo_funil", "gerar_copy", "criar_app", "estrategia"}
+
+        if needs_input:
+            dialog = ctk.CTkInputDialog(
+                text=f"Qual o nicho / descricao?\n(Ex: dentistas, restaurantes, marketing)",
+                title="William - Informacao"
+            )
+            nicho = dialog.get_input()
+            if nicho:
+                cmd = cmd + nicho
+            else:
+                return
+
+        if cmd:
+            self.input.delete(0, "end")
+            self.input.insert(0, cmd)
+            self._send()
+
+    # ================================================================
+    # ATTACHMENT - Anexar qualquer arquivo no chat
+    # ================================================================
+
+    def _attach_file(self):
+        """Permite anexar arquivo no chat - abre ou processa com IA."""
+        try:
+            from tkinter import filedialog
+            path = filedialog.askopenfilename(
+                title="Selecionar arquivo para William",
+                filetypes=[
+                    ("Todos os arquivos", "*.*"),
+                    ("Imagens", "*.png *.jpg *.jpeg *.gif *.bmp *.webp"),
+                    ("Documentos", "*.pdf *.docx *.doc *.txt *.md"),
+                    ("Planilhas", "*.xlsx *.xls *.csv"),
+                    ("Videos", "*.mp4 *.mkv *.avi *.mov"),
+                    ("Audio", "*.mp3 *.wav *.flac"),
+                ]
+            )
+            if path:
+                self._process_attachment(path)
+        except Exception as e:
+            log.error(f"Erro ao abrir dialogo de arquivo: {e}")
+            self._msg("SISTEMA", f"Erro ao abrir arquivo: {e}", "system")
+
+    def _process_attachment(self, path: str):
+        """Processa o arquivo anexado - abre + analisa com IA."""
+        import os
+        p = Path(path)
+        ext = p.suffix.lower()
+        nome = p.name
+
+        self._msg("USUARIO", f"[ARQUIVO ANEXADO] {nome}", "user")
+
+        # Envia para o SmartExecutorV2 abrir o arquivo
+        cmd = f"abra o arquivo {path}"
+        threading.Thread(target=self._process_with_attachment, args=(path, ext, nome), daemon=True).start()
+
+    def _process_with_attachment(self, path: str, ext: str, nome: str):
+        """Processa arquivo em thread separada."""
+        try:
+            from src.core.smart_executor_v2 import SmartExecutorV2
+            # Tenta abrir o arquivo
+            result = self.executor.process_message(f"abra o arquivo {path}")
+
+            # Construi mensagem de analise baseada no tipo
+            image_exts = {".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp"}
+            doc_exts = {".pdf", ".txt", ".md", ".docx", ".doc"}
+            sheet_exts = {".xlsx", ".xls", ".csv"}
+
+            if ext in image_exts:
+                msg = f"Imagem '{nome}' recebida! Posso analisar o conteudo visual se voce me descrever o que quer saber."
+            elif ext in doc_exts:
+                msg = f"Documento '{nome}' recebido! Me diga o que quer fazer: resumir, extrair informacoes, analisar..."
+            elif ext in sheet_exts:
+                msg = f"Planilha '{nome}' recebida! Posso ajudar a analisar os dados, criar graficos ou exportar."
+            else:
+                msg = f"Arquivo '{nome}' (tipo: {ext}) recebido! Tentei abrir automaticamente."
+
+            # Tenta abrir com programa correto
+            open_result = self._try_open_attachment(path, ext)
+            if open_result:
+                msg += f"\n{open_result}"
+
+            self.window.after(0, lambda: self._msg("WILLIAM", msg, "assistant"))
+
+        except Exception as e:
+            log.error(f"Erro ao processar anexo: {e}")
+            self.window.after(0, lambda: self._msg("SISTEMA", f"Erro ao processar {nome}: {e}", "system"))
+
+    def _try_open_attachment(self, path: str, ext: str) -> str:
+        """Tenta abrir o arquivo com o programa certo. Instala se necessario."""
+        import subprocess
+        import os
+
+        # Tenta abertura padrao do Windows
+        try:
+            os.startfile(path)
+            return f"Arquivo aberto com o programa padrao do sistema."
+        except Exception:
+            pass
+
+        # Fallback: programa especifico por extensao
+        programs = {
+            ".pdf": ["SumatraPDF", "notepad"],
+            ".mp4": ["wmplayer", "vlc"],
+            ".mkv": ["vlc", "wmplayer"],
+            ".mp3": ["wmplayer"],
+            ".docx": ["WINWORD", "soffice"],
+            ".xlsx": ["EXCEL", "soffice"],
+        }
+
+        prog_list = programs.get(ext, [])
+        for prog in prog_list:
+            try:
+                subprocess.Popen([prog, path], shell=True)
+                return f"Arquivo aberto com {prog}."
+            except Exception:
+                continue
+
+        # Nao conseguiu abrir - sugere instalar
+        suggestions = {
+            ".pdf": "Para abrir PDFs, diga: 'instale o SumatraPDF'",
+            ".mp4": "Para videos, diga: 'instale o VLC'",
+            ".mkv": "Para videos MKV, diga: 'instale o VLC'",
+            ".psd": "Para arquivos Photoshop, diga: 'instale o GIMP'",
+            ".ai": "Para arquivos Illustrator, use o Inkscape.",
+        }
+        return suggestions.get(ext, f"Diga 'instale um programa para abrir {ext}' e eu resolvo!")
 
     def _refresh_dashboard(self):
         """Atualiza todas as secoes do dashboard."""

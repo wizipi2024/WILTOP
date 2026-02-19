@@ -1,0 +1,30 @@
+{
+  "name": "prospeccao_auto",
+  "display_name": "Prospeccao Automatica",
+  "description": "Busca leads qualificados e prepara abordagem personalizada",
+  "trigger_patterns": [
+    "(?:encontre|busque|ache)\\s+clientes\\s+(.+)",
+    "preciso\\s+de\\s+leads\\s+(?:de\\s+|para\\s+)?(.+)",
+    "(?:prospectar|prospecte)\\s+(.+)",
+    "(?:buscar|achar)\\s+clientes\\s+(?:para\\s+|de\\s+)?(.+)"
+  ],
+  "variables": ["nicho"],
+  "steps": [
+    {
+      "action": "skill_business",
+      "description": "encontre clientes {topic}",
+      "params": {"skill": "prospeccao"},
+      "agent": "business_agent",
+      "timeout": 60
+    },
+    {
+      "action": "skill_business",
+      "description": "gere script para {topic}",
+      "params": {"skill": "conversao"},
+      "agent": "conversion_agent",
+      "timeout": 30
+    }
+  ],
+  "category": "monetizacao",
+  "enabled": true
+}

@@ -185,6 +185,51 @@ DEFAULT_ROLES: Dict[str, RoleCard] = {
         icon="📢",
         color="#EC4899",
     ),
+
+    "strategy_agent": RoleCard(
+        name="strategy_agent",
+        display_name="Agente de Estrategia",
+        description="Define modelo de negocio, oferta, ticket e funil completo com IA",
+        allowed_actions=[
+            "skill_business", "estrategia", "modelo_negocio", "oferta",
+            "ticket", "funil", "avatar", "canais", "ai_generate",
+        ],
+        allowed_dirs=["~/Desktop/WILTOP/data/business"],
+        tools=["skill_manager", "ai_brain"],
+        max_risk_level="yellow",
+        icon="🎯",
+        color="#F59E0B",
+    ),
+
+    "conversion_agent": RoleCard(
+        name="conversion_agent",
+        display_name="Agente de Conversao",
+        description="Gera copy, scripts de vendas, sequencias de follow-up e propostas",
+        allowed_actions=[
+            "skill_business", "copy", "script", "mensagem", "proposta",
+            "objecao", "sequencia", "follow_up", "ai_generate",
+        ],
+        allowed_dirs=["~/Desktop/WILTOP/data/business"],
+        tools=["skill_manager", "ai_brain"],
+        max_risk_level="yellow",
+        icon="💬",
+        color="#10B981",
+    ),
+
+    "n8n_agent": RoleCard(
+        name="n8n_agent",
+        display_name="Agente n8n",
+        description="Cria e gerencia fluxos de automacao no n8n (captura, follow-up, CRM)",
+        allowed_actions=[
+            "skill_business", "n8n", "workflow", "automacao", "funil",
+            "webhook", "crm", "integracao", "api_call",
+        ],
+        allowed_dirs=["~/Desktop/WILTOP/data/n8n"],
+        tools=["skill_manager", "http_client"],
+        max_risk_level="yellow",
+        icon="⚙️",
+        color="#6366F1",
+    ),
 }
 
 

@@ -1,0 +1,21 @@
+{
+  "name": "criar_app",
+  "display_name": "Criar App com VS Code",
+  "description": "Desenvolve um app ou ferramenta completa usando VS Code e IA",
+  "trigger_patterns": [
+    "(?:crie|cria|desenvolva|faca|construa)\\s+(?:um?|uma)?\\s*(?:app|aplicativo|sistema|site|landing\\s+page|crm|ferramenta|plataforma)\\s+(?:de\\s+|para\\s+)?(.+)",
+    "(?:programar|programar|desenvolver)\\s+(?:um?|uma)?\\s+(.+)"
+  ],
+  "variables": ["descricao"],
+  "steps": [
+    {
+      "action": "skill_business",
+      "description": "crie um app {topic}",
+      "params": {"skill": "vscode"},
+      "agent": "general_agent",
+      "timeout": 120
+    }
+  ],
+  "category": "monetizacao",
+  "enabled": true
+}

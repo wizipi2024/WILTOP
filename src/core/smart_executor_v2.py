@@ -1735,11 +1735,59 @@ root.mainloop()
                 except:
                     pass
 
+            # Mapa de instalacao automatica por extensao
+            auto_install_map = {
+                ".pdf": ("SumatraPDF", "winget install SumatraPDF.SumatraPDF"),
+                ".mp4": ("VLC", "winget install VideoLAN.VLC"),
+                ".mkv": ("VLC", "winget install VideoLAN.VLC"),
+                ".avi": ("VLC", "winget install VideoLAN.VLC"),
+                ".mov": ("VLC", "winget install VideoLAN.VLC"),
+                ".mp3": ("VLC", "winget install VideoLAN.VLC"),
+                ".flac": ("VLC", "winget install VideoLAN.VLC"),
+                ".psd": ("GIMP", "winget install GIMP.GIMP"),
+                ".docx": ("LibreOffice", "winget install TheDocumentFoundation.LibreOffice"),
+                ".xlsx": ("LibreOffice", "winget install TheDocumentFoundation.LibreOffice"),
+                ".odt": ("LibreOffice", "winget install TheDocumentFoundation.LibreOffice"),
+                ".rar": ("7-Zip", "winget install 7zip.7zip"),
+                ".7z": ("7-Zip", "winget install 7zip.7zip"),
+                ".zip": ("7-Zip", "winget install 7zip.7zip"),
+            }
+
+            if ext in auto_install_map:
+                prog_name, install_cmd = auto_install_map[ext]
+                # Tenta instalar automaticamente via winget
+                try:
+                    install_result = subprocess.run(
+                        install_cmd.split(),
+                        capture_output=True, text=True, timeout=120,
+                        encoding="utf-8", errors="replace"
+                    )
+                    if install_result.returncode == 0:
+                        # Instalou! Tenta abrir novamente
+                        try:
+                            os.startfile(filepath)
+                            return {"success": True, "type": "open_file",
+                                    "message": f"[OK] {prog_name} instalado automaticamente e arquivo aberto!"}
+                        except Exception:
+                            return {"success": True, "type": "open_file",
+                                    "message": f"[OK] {prog_name} instalado! Abra o arquivo manualmente."}
+                    else:
+                        return {"success": True, "type": "ask_user",
+                                "message": f"[INFO] Para abrir '{ext}' preciso do {prog_name}.\n"
+                                           f"Quer que eu instale agora? (Comando: {install_cmd})\n"
+                                           f"(Digite 'sim instale {prog_name}' para confirmar)"}
+                except subprocess.TimeoutExpired:
+                    return {"success": True, "type": "ask_user",
+                            "message": f"[INFO] Instalacao do {prog_name} demorou muito.\n"
+                                       f"Instale manualmente: {install_cmd}"}
+                except Exception:
+                    pass
+
             # Ultimo recurso: sugere programa
             return {"success": True, "type": "ask_user",
                     "message": f"[INFO] Nao encontrei programa para abrir '{ext}'.\n"
                                f"Quer que eu pesquise um programa gratuito para abrir este tipo de arquivo?\n"
-                               f"(Digite 'sim' para pesquisar)"}
+                               f"(Digite 'sim pesquise programa para {ext}' para buscar)"}
         except Exception as e:
             return {"success": False, "type": "open_file",
                     "message": f"[ERRO] {e}"}
@@ -1752,6 +1800,27 @@ root.mainloop()
         if not any(w in msg for w in ["instale", "instalar", "instala", "install",
                                        "baixe", "baixar", "baixa", "download"]):
             return None
+
+        # Detecta "sim instale X" - confirmacao do usuario
+        confirm_match = re.search(r'sim\s+(?:instale|instalar)\s+(.+)', msg)
+        if confirm_match:
+            prog_name = confirm_match.group(1).strip()
+            try:
+                install_result = subprocess.run(
+                    ["winget", "install", "--accept-package-agreements",
+                     "--accept-source-agreements", prog_name],
+                    capture_output=True, text=True, timeout=180,
+                    encoding="utf-8", errors="replace"
+                )
+                if install_result.returncode == 0:
+                    return {"success": True, "type": "install_program",
+                            "message": f"[OK] {prog_name} instalado com sucesso via winget!"}
+                else:
+                    return {"success": False, "type": "install_program",
+                            "message": f"[ERRO] Falha ao instalar {prog_name}.\n{install_result.stderr[:200]}"}
+            except Exception as e:
+                return {"success": False, "type": "install_program",
+                        "message": f"[ERRO] {e}"}
 
         # NAO instalar se e sobre arquivo/pasta
         if any(w in msg for w in ["arquivo", "pasta", "extensao"]):

@@ -14,6 +14,7 @@ from src.core.observability import get_event_log
 from src.core.task_queue import TaskQueue, get_task_queue
 from src.core.roles import RoleCard, get_all_roles, select_best_role, DEFAULT_ROLES
 from src.core.playbooks import get_playbook_manager
+from src.core.quality_gate import get_quality_gate
 
 log = get_logger(__name__)
 
@@ -45,10 +46,11 @@ class AgentOrchestrator:
         self.task_queue = get_task_queue()
         self.risk_policy = get_risk_policy()
         self.playbook_manager = get_playbook_manager()
+        self.quality_gate = get_quality_gate()
         self.roles = get_all_roles()
         self._nlp_processor = None  # Lazy load
 
-        log.info("AgentOrchestrator inicializado")
+        log.info("AgentOrchestrator inicializado com QualityGate")
 
     def set_executor(self, executor):
         """Define executor (pode ser setado depois da init)."""
@@ -150,11 +152,30 @@ class AgentOrchestrator:
                     skill_result = skill.execute(normalized_msg, {}, context)
 
                     if skill_result and skill_result.success:
+                        # === Quality Gate para skills de negocio ===
+                        quality_badge = ""
+                        business_skills = {"estrategia", "conversao", "n8n", "prospeccao", "vscode"}
+                        if skill.name in business_skills:
+                            result_type_map = {
+                                "estrategia": "estrategia",
+                                "conversao": "copy",
+                                "n8n": "n8n",
+                                "prospeccao": "all",
+                                "vscode": "code",
+                            }
+                            qtype = result_type_map.get(skill.name, "all")
+                            try:
+                                eval_result = self.quality_gate.evaluate(qtype, skill_result.message)
+                                quality_badge = "\n\n" + self.quality_gate.format_badge(eval_result)
+                                log.info(f"QualityGate [{skill.name}]: {eval_result.score}/10 approved={eval_result.approved}")
+                            except Exception as qe:
+                                log.debug(f"QualityGate erro: {qe}")
+
                         # Converte SkillResult para o formato esperado
                         action = {
                             "success": True,
                             "type": f"skill_{skill.category}",
-                            "message": skill_result.message,
+                            "message": skill_result.message + quality_badge,
                             "data": skill_result.data or {},
                             "proof": skill_result.proof,
                             "next_step": skill_result.next_step,
