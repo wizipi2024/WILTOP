@@ -108,135 +108,103 @@ CTA: wa.me/[SEU_NUMERO]"""
     def _gerar_sequencia(self, command: str) -> SkillResult:
         nicho = self._extrair_nicho(command)
 
-        sequencia = f"""[SEQUENCIA DE FOLLOW-UP] - 7 DIAS para {nicho.upper()}
+        prompt = f"""Voce e um especialista em vendas e follow-up no mercado brasileiro.
+Crie uma sequencia de follow-up de 7 dias para o nicho: {nicho}
 
-DIA 1 - Primeiro Contato:
-"Ola [Nome]! Vi seu trabalho com {nicho} e tenho algo que pode te interessar.
-Posso te mandar um resumo? So 2 minutos!"
+Inclua exatamente:
+- DIA 1: Primeiro contato (curto, gera curiosidade)
+- DIA 2: Entrega valor gratuito (dica ou conteudo relevante para {nicho})
+- DIA 3: Prova social (resultado real ou case do setor de {nicho})
+- DIA 4: Pergunta estrategica (descobre a dor principal)
+- DIA 5: Oferta direta com beneficio claro
+- DIA 7: Ultimo follow-up respeitoso com saida digna
 
-DIA 2 - Valor Gratuito:
-"[Nome], separei este conteudo para voce:
-[Link/dica relevante sobre {nicho}]
-Acredito que vai ajudar bastante!"
+Cada mensagem deve ser curta (max 3 linhas), coloquial, sem parecer spam.
+Use linguagem especifica do setor de {nicho}."""
 
-DIA 3 - Prova Social:
-"[Nome], aqui um resultado de um cliente meu do setor de {nicho}:
-'[Depoimento ou resultado especifico]'
-Voce ja passou por esse desafio tambem?"
+        fallback = f"""[SEQUENCIA DE FOLLOW-UP] - 7 DIAS para {nicho.upper()}
 
-DIA 4 - Pergunta Estrategica:
-"[Nome], so uma pergunta rapida:
-Qual e o seu maior desafio hoje para crescer seu negocio de {nicho}?"
+DIA 1: "Ola [Nome]! Vi seu trabalho com {nicho} e tenho algo que pode te interessar. Posso te mandar um resumo? So 2 minutos!"
+DIA 2: "[Nome], separei uma dica que tem ajudado muito no setor de {nicho}: [dica]. Espero que seja util!"
+DIA 3: "[Nome], um cliente meu de {nicho} obteve [resultado] em 30 dias. Voce ja passou por esse desafio?"
+DIA 4: "[Nome], so uma pergunta: qual e seu maior desafio hoje para crescer em {nicho}?"
+DIA 5: "[Nome], acredito que posso ajudar exatamente com isso. 15 minutos para te mostrar como? Sem compromisso!"
+DIA 7: "[Nome], nao quero ser insistente. Faz sentido conversarmos? Se nao for o momento, sem problema!"
 
-DIA 5 - Oferta Direta:
-"[Nome], acredito que posso ajudar especificamente no que voce mencionou.
-Posso te mostrar em 15 minutos como? Sem compromisso!"
+REGRAS: max 1 msg/dia | personalize com o nome | pare se receber "nao" claro"""
 
-DIA 7 - Ultimo Follow-up:
-"[Nome], nao quero ser insistente, mas gostaria de saber:
-faz sentido conversarmos sobre crescimento para {nicho}?
-Se nao for o momento, sem problema. So me avisa!"
-
-REGRAS:
-  - Nunca envie mais de 1 mensagem por dia
-  - Sempre personalize com o nome do lead
-  - Pare se receber um "nao" claro
-  - Use o mesmo canal que o lead usa (WhatsApp / Email / LinkedIn)
-"""
-        return SkillResult(success=True, message=sequencia)
+        resposta = _get_ai_response(prompt, fallback)
+        return SkillResult(success=True, message=resposta)
 
     def _tratar_objecoes(self, command: str) -> SkillResult:
-        objecoes = """[TRATAMENTO DE OBJECOES] - Scripts Validados
+        nicho = self._extrair_nicho(command)
 
-OBJECAO 1: "Esta muito caro"
-Script: "Entendo! Posso te perguntar: caro comparado a que?
-Se voce pudesse ter [resultado X] em 30 dias, quanto isso valeria para o seu negocio?
-Geralmente meus clientes recuperam o investimento ja no primeiro mes."
+        prompt = f"""Voce e um especialista em vendas consultivas no Brasil.
+Crie scripts detalhados para tratar as 6 principais objecoes de vendas no nicho: {nicho}
 
-OBJECAO 2: "Preciso pensar"
-Script: "Claro, faz sentido! Mas me conta: o que especificamente
-voce precisa pensar? Assim posso te ajudar a tomar a melhor decisao."
+Para cada objecao forneca: a frase exata do cliente, o script de resposta (coloquial, natural) e a pergunta de redirecionamento.
 
-OBJECAO 3: "Ja tentei e nao funcionou"
-Script: "Sinto muito que isso aconteceu! Me conta o que voce tentou?
-O que eu faco e diferente porque [diferenciacal]. Posso te mostrar
-exatamente por que funciona para {nicho}?"
+Objecoes:
+1. "Esta muito caro" - reframe de valor especifico para {nicho}
+2. "Preciso pensar" - descobrir o bloqueio real
+3. "Ja tentei e nao funcionou" - diferenciar da experiencia anterior
+4. "Nao tenho tempo agora" - ironia: o produto economiza tempo em {nicho}
+5. "Vou falar com meu socio" - envolver o decisor
+6. "Nao preciso disso" - descobrir como resolve o problema hoje
 
-OBJECAO 4: "Nao tenho tempo agora"
-Script: "Entendo! Justamente por isso isso faz sentido: o objetivo
-e justamente voce ganhar tempo, nao perder mais.
-Quanto tempo voce perde hoje com [tarefa repetitiva]?"
+Use linguagem coloquial brasileira, especifica para o setor de {nicho}."""
 
-OBJECAO 5: "Vou falar com meu socio"
-Script: "Otimo! Para facilitar, posso preparar um material resumido
-para voces avaliarem juntos? Assim fica mais facil apresentar.
-Quando voces se reúnem?"
+        fallback = """[TRATAMENTO DE OBJECOES] - Scripts Validados
 
-OBJECAO 6: "Nao preciso disso"
-Script: "Totalmente valido! Me permite uma pergunta: como voce esta
-resolvendo [problema X] hoje? Curiosidade mesmo."
+1. "Esta caro" → "Caro comparado a que? Se voce resolver [dor] em 30 dias, quanto vale isso?"
+2. "Preciso pensar" → "Claro! O que especificamente trava a decisao? Posso ajudar a clarear."
+3. "Ja tentei" → "Me conta o que tentou? O que faco e diferente porque [diferencial unico]."
+4. "Sem tempo" → "Justamente - o objetivo e voce GANHAR tempo, nao perder mais."
+5. "Vou falar com socio" → "Otimo! Preparo um resumo para facilitar a conversa de voces?"
+6. "Nao preciso" → "Como voce esta resolvendo [problema X] hoje? Curiosidade mesmo."
 
-REGRA DE OURO:
-Nunca discuta. Sempre valide a objecao e redirecione com pergunta.
-"""
-        return SkillResult(success=True, message=objecoes)
+REGRA DE OURO: Valide sempre + redirecione com pergunta. Nunca discuta."""
+
+        resposta = _get_ai_response(prompt, fallback)
+        return SkillResult(success=True, message=resposta)
 
     def _gerar_proposta(self, command: str) -> SkillResult:
         nicho = self._extrair_nicho(command)
 
-        proposta = f"""[PROPOSTA COMERCIAL] para {nicho.upper()}
+        prompt = f"""Voce e um consultor de negocios senior no Brasil.
+Crie uma proposta comercial COMPLETA e PROFISSIONAL para o nicho: {nicho}
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PROPOSTA COMERCIAL - [SEU NOME/EMPRESA]
-Para: [Nome do Cliente]
-Data: [Data]
-Validade: 7 dias
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Inclua:
+1. OBJETIVO - o que sera resolvido para o cliente de {nicho}
+2. DIAGNOSTICO - as 3 principais dores do setor de {nicho}
+3. SOLUCAO - o que sera entregue (fase 1, 2, 3 com prazos realistas)
+4. RESULTADOS ESPERADOS - metricas e KPIs especificos para {nicho}
+5. INVESTIMENTO - 3 opcoes de preco adequadas para o mercado brasileiro de {nicho}
+6. GARANTIA - politica de garantia que gera confianca
+7. PROXIMOS PASSOS - CTA claro para fechar
 
-OBJETIVO:
-Ajudar [empresa do cliente] a crescer faturamento
-e automatizar processos de {nicho}.
+Seja especifico para {nicho}: use terminologia do setor, mencione dores reais, sugira valores realistas para o mercado brasileiro."""
 
-O QUE SERA ENTREGUE:
+        fallback = f"""[PROPOSTA COMERCIAL] para {nicho.upper()}
 
-FASE 1 - Diagnostico e Estrategia (Semana 1):
-  ✓ Analise completa do negocio atual
-  ✓ Mapeamento de oportunidades
-  ✓ Estrategia personalizada 90 dias
-  ✓ Plano de acao detalhado
+OBJETIVO: Ajudar [cliente] a crescer faturamento e otimizar processos de {nicho}.
 
-FASE 2 - Implementacao (Semanas 2-3):
-  ✓ Configuracao dos funis de captacao
-  ✓ Automacoes de follow-up
-  ✓ Integracao com ferramentas atuais
-  ✓ Treinamento da equipe
-
-FASE 3 - Otimizacao e Resultados (Semana 4+):
-  ✓ Acompanhamento das metricas
-  ✓ Ajustes baseados em dados
-  ✓ Relatorio mensal detalhado
-  ✓ Suporte continuo
+FASES:
+  Fase 1 (Semana 1): Diagnostico + Estrategia 90 dias
+  Fase 2 (Semanas 2-3): Implementacao + Automacoes
+  Fase 3 (Mes 2+): Otimizacao + Acompanhamento mensal
 
 INVESTIMENTO:
-  Opcao 1 - Setup: R$2.000 + R$1.500/mes
-  Opcao 2 - 3 meses: R$5.500 (economia de R$1.000)
-  Opcao 3 - 6 meses: R$9.000 (melhor custo-beneficio)
+  Opcao 1: R$2.000 + R$1.500/mes
+  Opcao 2: R$5.500 (3 meses)
+  Opcao 3: R$9.000 (6 meses - melhor custo-beneficio)
 
-GARANTIA:
-  Se em 30 dias nao houver resultados mensuráveis,
-  devolvemos 100% do investimento.
+GARANTIA: 30 dias com resultado ou devolucao total.
 
-PROXIMOS PASSOS:
-  1. Aceite esta proposta respondendo "ACEITO"
-  2. Enviaremos o contrato por email
-  3. Iniciaremos em 24h apos assinatura
-  4. Primeiro resultado esperado em 15-30 dias
+PROXIMOS PASSOS: Responda "ACEITO" para receber o contrato em 24h."""
 
-[ASSINE AQUI: link_contrato]
-[PAGUE AQUI: link_pagamento]
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-"""
-        # Salva proposta
+        proposta = _get_ai_response(prompt, fallback)
+
         DATA_DIR.mkdir(parents=True, exist_ok=True)
         (DATA_DIR / "ultima_proposta.txt").write_text(proposta, encoding="utf-8")
 
@@ -244,41 +212,42 @@ PROXIMOS PASSOS:
 
     def _gerar_copy_email(self, command: str) -> SkillResult:
         nicho = self._extrair_nicho(command)
-        email = f"""[EMAIL DE PROSPECAO] para {nicho.upper()}
 
-ASSUNTO: Ideia para crescer seu negocio de {nicho} (2 min de leitura)
+        prompt = f"""Voce e um copywriter especialista em email marketing B2B no Brasil.
+Crie um email de prospecao fria de ALTA CONVERSAO para o nicho: {nicho}
 
----
+O email deve ter:
+- ASSUNTO: curto, curioso, especifico para {nicho} (max 60 chars)
+- ABERTURA: personalizada, menciona algo especifico de {nicho}
+- DOR: 2-3 dores reais e especificas que empresas de {nicho} enfrentam
+- SOLUCAO: o que voce oferece, sem revelar tudo
+- PROVA: resultado especifico (pode ser hipotetico mas realista para {nicho})
+- CTA: simples, uma acao so (agendar 20min call)
+- P.S.: reforca urgencia ou escassez
+
+Tom: profissional mas humano. Tamanho: maximo 150 palavras no corpo.
+Especifico para {nicho} - use a linguagem que esse publico usa."""
+
+        fallback = f"""[EMAIL DE PROSPECAO] para {nicho.upper()}
+
+ASSUNTO: Ideia rapida para {nicho} (2 min)
 
 Ola [Nome],
 
-Vi que voce atua com {nicho} em [Cidade] e queria compartilhar algo
-que tem gerado resultados expressivos para profissionais do seu setor.
+Vi que voce atua com {nicho} e queria compartilhar algo que tem gerado resultados no setor.
 
-Empresas como a sua geralmente enfrentam 3 desafios principais:
-1. Falta de clientes novos de forma previsivel
-2. Muito trabalho manual e repetitivo
-3. Dificuldade em se destacar da concorrencia
+Profissionais de {nicho} geralmente enfrentam:
+- Falta de clientes novos de forma previsivel
+- Muito trabalho manual
+- Dificuldade em se destacar
 
-Desenvolvemos uma metodologia que resolve exatamente isso — e os
-resultados sao comprovados:
+Tenho uma metodologia que resolve exatamente isso.
 
-[RESULTADO CLIENTE 1]: Aumentou faturamento em 40% em 60 dias
-[RESULTADO CLIENTE 2]: Reduziu 70% do trabalho manual
-[RESULTADO CLIENTE 3]: Triplicou a carteira de clientes em 3 meses
+Posso te mostrar em 20 minutos? [link_agenda]
 
-Posso te mostrar como em uma call de 20 minutos?
+Abraco, [Nome] | [WhatsApp]
 
-[AGENDAR AGORA - link_calendly]
+P.S.: Trabalho com poucos clientes por mes para garantir resultados. Se fizer sentido, sugiro agendar logo!"""
 
-Ou responda este email com o melhor horario.
-
-Abraco,
-[Seu Nome]
-[Cargo] | [Empresa]
-[WhatsApp] | [Site]
-
-P.S.: So trabalho com 5 novos clientes por mes para garantir
-dedicacao total. Se tiver interesse, sugiro agendamento rapido!
-"""
+        email = _get_ai_response(prompt, fallback)
         return SkillResult(success=True, message=email)

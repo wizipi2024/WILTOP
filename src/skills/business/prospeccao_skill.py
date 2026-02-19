@@ -15,6 +15,19 @@ log = get_logger(__name__)
 DATA_DIR = Path("data/leads")
 
 
+def _get_ai_response(prompt: str, fallback: str = "") -> str:
+    """Chama a IA real com o prompt. Usa fallback se falhar."""
+    try:
+        from src.core.ai_engine import get_engine
+        engine = get_engine()
+        response = engine.chat_with_fallback(prompt)
+        if response and len(response) > 20:
+            return response
+    except Exception as e:
+        log.warning(f"IA nao disponivel para prospeccao: {e}")
+    return fallback
+
+
 class ProspeccaoSkill(BaseSkill):
     """Agente especializado em prospecção e geração de leads."""
 
@@ -143,6 +156,14 @@ class ProspeccaoSkill(BaseSkill):
         top3 = leads[:3]
         top_txt = "\n".join([f"  {i+1}. {l['empresa']} | {l['telefone']} | Score: {l['score']}/100" for i, l in enumerate(top3)])
 
+        # IA gera mensagem de abordagem personalizada para o nicho
+        prompt_msg = f"""Crie uma mensagem de abordagem pelo WhatsApp CURTA (max 3 linhas) e de alta conversao para prospectar empresas de {nicho} em {cidade}.
+A mensagem deve gerar curiosidade sem revelar tudo, ser coloquial e especifica para o setor de {nicho}.
+Inclua apenas a mensagem, sem explicacoes."""
+
+        fallback_msg = f"Ola [Nome]! Vi que voce atua com {nicho} em {cidade} e tenho uma ideia que tem gerado resultados no setor. Posso te contar rapidinho?"
+        msg_abordagem = _get_ai_response(prompt_msg, fallback_msg)
+
         mensagem = f"""[PROSPECCAO] {nicho.upper()} em {cidade.upper()}
 
 RESULTADO: {len(leads)} leads encontrados
@@ -155,11 +176,14 @@ DISTRIBUICAO POR SCORE:
   Media prioridade (60-79): {sum(1 for l in leads if 60<=l['score']<80)} leads
   Baixa prioridade (<60):   {sum(1 for l in leads if l['score']<60)} leads
 
+MENSAGEM DE ABORDAGEM SUGERIDA:
+{msg_abordagem}
+
 ARQUIVO SALVO:
   {arquivo}
 
 PROXIMOS PASSOS:
-  1. [William] "gere script para {nicho}" → Script de abordagem
+  1. [William] "gere script para {nicho}" → Script de abordagem completo
   2. [William] "crie funil para {nicho}" → Automacao n8n
   3. [William] "ver pipeline" → Acompanhar status dos leads
 """
@@ -221,16 +245,37 @@ PROXIMOS PASSOS:
         return SkillResult(success=True, message=f"[EXPORTADO] {len(leads)} leads salvos em:\n{arquivo}")
 
     def _enriquecer_lead(self, command: str) -> SkillResult:
-        return SkillResult(success=True, message="""[ENRIQUECIMENTO DE LEAD]
+        # Tenta extrair nome da empresa do comando
+        palavras_remover = ["enriqueca", "enriquecer", "enriquecimento", "o", "lead", "dados", "informacoes", "de", "da", "do"]
+        palavras = command.lower().split()
+        empresa = " ".join(w for w in palavras if w not in palavras_remover).strip()
+        empresa = empresa.title() or "a empresa"
 
-Para enriquecer um lead especifico, preciso do nome da empresa.
-Use: "enriqueca o lead [Nome da Empresa]"
+        prompt = f"""Voce e um especialista em inteligencia comercial no Brasil.
+Simule um enriquecimento de dados para o lead: {empresa}
 
-Dados que busco automaticamente:
-  - Site e redes sociais
-  - Telefone e email
-  - Numero de funcionarios (estimado)
-  - Faturamento estimado
-  - Decisor / responsavel
-  - Presenca digital (score)
-""")
+Forneca (de forma realista e util para uma abordagem de vendas):
+1. PERFIL DA EMPRESA - segmento, porte estimado, localizacao provavel
+2. DORES PREVISTAS - os 3 maiores desafios que esse tipo de empresa enfrenta
+3. DECISOR - cargo do decisor mais provavel (ex: dono, diretor, gerente)
+4. CANAL IDEAL - melhor canal para abordagem (WhatsApp, LinkedIn, presencial)
+5. MELHOR HORARIO - quando abordar (dias e horarios tipicos do setor)
+6. GANCHO - uma frase de abertura personalizada para {empresa}
+
+Se nao tiver dados reais, use inteligencia do setor para dar orientacoes uteis."""
+
+        fallback = f"""[ENRIQUECIMENTO] {empresa}
+
+Para enriquecer este lead especificamente, use:
+"enriqueca o lead [Nome Exato da Empresa]"
+
+Dados que busco:
+  - Segmento e porte da empresa
+  - Dores especificas do setor
+  - Decisor mais provavel
+  - Melhor canal de abordagem
+  - Horario ideal para contato
+  - Gancho personalizado de abertura"""
+
+        resposta = _get_ai_response(prompt, fallback)
+        return SkillResult(success=True, message=resposta)

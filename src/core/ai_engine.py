@@ -13,6 +13,9 @@ from src.utils.logger import get_logger
 
 log = get_logger(__name__)
 
+# Cooldown de providers com rate limit (segundos)
+_RATE_LIMIT_COOLDOWN = 60
+
 # Router importado de forma lazy para evitar circular imports
 _router = None
 
@@ -41,9 +44,11 @@ class AIEngine:
         """Inicializa o motor de IA."""
         self.providers = {}
         self.default_provider = settings.DEFAULT_AI_PROVIDER
+        # Ordem de fallback: Groq primeiro (mais rápido), depois OpenAI/Anthropic (mais inteligentes), Ollama por último
         self.fallback_order = getattr(settings, 'PROVIDER_FALLBACK_ORDER',
-                                       ['groq', 'ollama', 'openai', 'anthropic'])
+                                       ['groq', 'openai', 'anthropic', 'ollama'])
         self._provider_errors: Dict[str, Dict] = {}  # Rastreia erros por provider
+        self._rate_limited_until: Dict[str, float] = {}  # Provider → timestamp de liberacao
         self._initialize_providers()
 
     def _initialize_providers(self):
@@ -119,6 +124,20 @@ class AIEngine:
             )
 
         log.info(f"Provedores disponíveis: {list(self.providers.keys())}")
+
+    def _is_rate_limited(self, provider_name: str) -> bool:
+        """Verifica se provider esta em cooldown de rate limit."""
+        until = self._rate_limited_until.get(provider_name, 0)
+        if time.time() < until:
+            remaining = int(until - time.time())
+            log.debug(f"{provider_name} em cooldown por mais {remaining}s")
+            return True
+        return False
+
+    def _mark_rate_limited(self, provider_name: str, cooldown: int = _RATE_LIMIT_COOLDOWN):
+        """Marca provider como rate limited por cooldown segundos."""
+        self._rate_limited_until[provider_name] = time.time() + cooldown
+        log.warning(f"Provider {provider_name} rate limited — cooldown {cooldown}s")
 
     def get_provider(self, provider_name: Optional[str] = None):
         """
@@ -240,6 +259,12 @@ class AIEngine:
 
         errors = []
         for provider_name in order:
+            # Pula providers em cooldown de rate limit
+            if self._is_rate_limited(provider_name):
+                log.info(f"Pulando {provider_name} (rate limited), tentando proximo...")
+                errors.append(f"{provider_name}: rate limited (em cooldown)")
+                continue
+
             try:
                 provider_instance = self.providers[provider_name]
                 log.info(f"Tentando provider: {provider_name}")
@@ -251,8 +276,9 @@ class AIEngine:
                     response = provider_instance.chat(message, context, **kwargs)
                 elapsed = time.time() - start
 
-                # Sucesso - registra
+                # Sucesso - limpa erros e cooldown
                 self._provider_errors.pop(provider_name, None)
+                self._rate_limited_until.pop(provider_name, None)
                 log.info(f"Provider {provider_name} respondeu em {elapsed:.2f}s")
 
                 # Log no observability
@@ -273,15 +299,26 @@ class AIEngine:
                 return response
 
             except Exception as e:
-                elapsed = time.time() - start if 'start' in dir() else 0
+                elapsed = time.time() - start if 'start' in locals() else 0
+                error_str = str(e).lower()
                 error_msg = f"{provider_name}: {str(e)[:200]}"
                 errors.append(error_msg)
                 log.warning(f"Provider {provider_name} falhou: {e}")
+
+                # Detecta 429 / rate limit — coloca em cooldown
+                is_rate_limit = any(x in error_str for x in [
+                    "429", "rate_limit", "rate limit", "too many requests",
+                    "quota", "ratelimit", "tokens per minute", "requests per minute"
+                ])
+                if is_rate_limit:
+                    self._mark_rate_limited(provider_name, cooldown=_RATE_LIMIT_COOLDOWN)
+                    log.warning(f"429 detectado em {provider_name} — rotacionando para proximo provider")
 
                 # Registra erro
                 self._provider_errors[provider_name] = {
                     "error": str(e)[:200],
                     "timestamp": time.time(),
+                    "rate_limited": is_rate_limit,
                 }
 
                 # Log no observability
@@ -293,6 +330,7 @@ class AIEngine:
                         data={
                             "provider": provider_name,
                             "error": str(e)[:200],
+                            "rate_limited": is_rate_limit,
                         },
                         risk_level="yellow",
                     )
@@ -316,12 +354,16 @@ class AIEngine:
         health = {}
         for name, provider in self.providers.items():
             error_info = self._provider_errors.get(name)
+            rl_until = self._rate_limited_until.get(name, 0)
+            is_rl = time.time() < rl_until
             health[name] = {
-                "available": provider.is_available(),
+                "available": provider.is_available() and not is_rl,
                 "model": provider.model,
                 "last_error": error_info.get("error") if error_info else None,
                 "error_time": error_info.get("timestamp") if error_info else None,
                 "is_default": name == self.default_provider,
+                "rate_limited": is_rl,
+                "rate_limit_remaining": max(0, int(rl_until - time.time())) if is_rl else 0,
             }
         return health
 

@@ -808,26 +808,29 @@ class WilliamFinal:
 
     def _receita_dialog(self, action: str):
         """Abre dialog para acoes de negocio e envia comando ao chat."""
-        commands = {
-            "novo_funil": "crie funil para ",
-            "ver_leads": "ver pipeline",
-            "gerar_copy": "gere script para ",
-            "criar_app": "crie um app de landing page para ",
-            "estrategia": "defina estrategia para ",
-            "n8n_flows": "listar workflows",
+        if action == "criar_app":
+            self._dialog_criar_app()
+            return
+
+        dialogs = {
+            "novo_funil":  ("crie funil para ", "Criar Funil de Vendas",
+                            "Para qual nicho?\n(Ex: dentistas, academias, imobiliaria)"),
+            "ver_leads":   ("ver pipeline", None, None),
+            "gerar_copy":  ("gere script de abordagem para ", "Gerar Script de Vendas",
+                            "Para qual nicho ou produto?\n(Ex: consultoria, software, curso online)"),
+            "estrategia":  ("defina estrategia para ", "Estrategia de Negocios",
+                            "Para qual nicho ou produto?\n(Ex: clinica, loja virtual, agencia de marketing)"),
+            "n8n_flows":   ("listar workflows", None, None),
         }
-        cmd = commands.get(action, "")
+        config = dialogs.get(action, (action, None, None))
+        cmd_base, title, text = config
+        cmd = cmd_base
 
-        needs_input = action in {"novo_funil", "gerar_copy", "criar_app", "estrategia"}
-
-        if needs_input:
-            dialog = ctk.CTkInputDialog(
-                text=f"Qual o nicho / descricao?\n(Ex: dentistas, restaurantes, marketing)",
-                title="William - Informacao"
-            )
-            nicho = dialog.get_input()
-            if nicho:
-                cmd = cmd + nicho
+        if title and text:
+            dialog = ctk.CTkInputDialog(text=text, title=f"William — {title}")
+            entrada = dialog.get_input()
+            if entrada and entrada.strip():
+                cmd = cmd + entrada.strip()
             else:
                 return
 
@@ -835,6 +838,423 @@ class WilliamFinal:
             self.input.delete(0, "end")
             self.input.insert(0, cmd)
             self._send()
+
+    def _dialog_criar_app(self):
+        """
+        Wizard 2 passos:
+          PASSO 1 — Formulario de planejamento detalhado
+          PASSO 2 — Preview do plano gerado pela IA + confirmar / voltar / ajustar
+        """
+        import tkinter as tk
+
+        # ── helpers de dados coletados ──────────────────────────────
+        tipo_map = {
+            "App Web (HTML)":               "html",
+            "Apresentacao PowerPoint":      "powerpoint",
+            "Planilha Excel (.xlsx)":       "excel",
+            "Documento Word (.docx)":       "word",
+            "Landing Page":                 "landing",
+            "Dashboard Web":                "dashboard",
+            "CRM / Sistema de Clientes":    "crm",
+            "Calculadora / Simulador":      "calculadora",
+            "Jogo HTML (Canvas)":           "jogo",
+            "Portfolio / Site Pessoal":     "portfolio",
+        }
+
+        # ════════════════════════════════════════════════════════════
+        # JANELA PRINCIPAL (reutilizada nos 2 passos)
+        # ════════════════════════════════════════════════════════════
+        win = ctk.CTkToplevel(self.window)
+        win.title("William — Criar App / Arquivo")
+        win.geometry("640x720")
+        win.resizable(False, False)
+        win.configure(fg_color=COLORS["bg_dark"])
+        win.lift()
+        win.focus_force()
+        win.grab_set()
+
+        # Frame raiz (ocupa tudo)
+        root_frame = ctk.CTkFrame(win, fg_color=COLORS["bg_dark"])
+        root_frame.pack(fill="both", expand=True)
+
+        # ── barra de progresso (passo 1 ou 2) ──
+        progress_bar = ctk.CTkFrame(win, fg_color=COLORS["bg_card"], corner_radius=0, height=36)
+        progress_bar.pack(fill="x", side="bottom")
+        progress_bar.pack_propagate(False)
+
+        step_lbl = ctk.CTkLabel(progress_bar, text="PASSO 1 de 2  ▶  Planejamento",
+                                 font=ctk.CTkFont(family="Consolas", size=10, weight="bold"),
+                                 text_color=COLORS["neon_cyan"])
+        step_lbl.pack(side="left", padx=15)
+
+        # Variável que guarda os dados coletados no passo 1
+        dados = {}
+
+        # ════════════════════════════════════════════════════════════
+        # PASSO 1 — Formulário
+        # ════════════════════════════════════════════════════════════
+        def mostrar_passo1():
+            # Limpa root_frame
+            for w in root_frame.winfo_children():
+                w.destroy()
+
+            step_lbl.configure(text="PASSO 1 de 2  ▶  Planejamento  |  Preencha tudo com detalhes")
+
+            # Header
+            hdr = ctk.CTkFrame(root_frame, fg_color=COLORS["bg_card"], corner_radius=0, height=50)
+            hdr.pack(fill="x")
+            hdr.pack_propagate(False)
+            ctk.CTkLabel(hdr, text="  ⚡ CRIAR APP / ARQUIVO COM IA",
+                         font=ctk.CTkFont(family="Consolas", size=14, weight="bold"),
+                         text_color=COLORS["neon_blue"]).pack(side="left", padx=15, pady=10)
+            ctk.CTkLabel(hdr, text="PASSO 1 / 2",
+                         font=ctk.CTkFont(family="Consolas", size=10),
+                         text_color=COLORS["text_secondary"]).pack(side="right", padx=15)
+
+            scroll = ctk.CTkScrollableFrame(root_frame, fg_color=COLORS["bg_dark"])
+            scroll.pack(fill="both", expand=True, padx=12, pady=8)
+
+            def slbl(txt, cor=COLORS["neon_cyan"]):
+                ctk.CTkLabel(scroll, text=txt,
+                             font=ctk.CTkFont(family="Consolas", size=10, weight="bold"),
+                             text_color=cor).pack(anchor="w", pady=(14, 2))
+
+            def flbl(txt):
+                ctk.CTkLabel(scroll, text=txt,
+                             font=ctk.CTkFont(family="Consolas", size=10),
+                             text_color=COLORS["text_secondary"]).pack(anchor="w", pady=(4, 2))
+
+            # 1 TIPO
+            slbl("1. TIPO DE ARQUIVO / APP")
+            flbl("O que voce quer criar?")
+            tipo_var = tk.StringVar(value=dados.get("tipo_label", "App Web (HTML)"))
+            ctk.CTkOptionMenu(
+                scroll, values=list(tipo_map.keys()), variable=tipo_var,
+                font=ctk.CTkFont(family="Consolas", size=11),
+                fg_color=COLORS["bg_card"], button_color=COLORS["neon_blue"],
+                button_hover_color="#2563eb", dropdown_fg_color=COLORS["bg_card"],
+                text_color=COLORS["text_primary"], width=430
+            ).pack(anchor="w", pady=(0, 6))
+
+            # 2 NOME / TITULO
+            slbl("2. NOME / TITULO DO PROJETO")
+            flbl("Como vai se chamar? (sera o titulo principal)")
+            nome_e = ctk.CTkEntry(scroll, font=ctk.CTkFont(family="Consolas", size=11),
+                                  fg_color=COLORS["bg_panel"], text_color=COLORS["text_primary"],
+                                  border_width=1, border_color=COLORS["neon_blue"],
+                                  placeholder_text="Ex: CRM de Vendas para Dentistas, Jogo Space Shooter...")
+            nome_e.pack(fill="x", pady=(0, 4))
+            if dados.get("nome"):
+                nome_e.insert(0, dados["nome"])
+
+            # 3 DESCRICAO
+            slbl("3. DESCRICAO COMPLETA  ★ MAIS DETALHES = MELHOR RESULTADO")
+            flbl("Descreva EXATAMENTE o que o arquivo deve fazer / conter:")
+            desc_e = ctk.CTkTextbox(scroll, height=90,
+                                    font=ctk.CTkFont(family="Consolas", size=11),
+                                    fg_color=COLORS["bg_panel"], text_color=COLORS["text_primary"],
+                                    border_width=1, border_color=COLORS["neon_blue"])
+            desc_e.pack(fill="x", pady=(0, 4))
+            desc_e.insert("1.0", dados.get("descricao", ""))
+
+            # 4 FUNCIONALIDADES (campo chave!)
+            slbl("4. FUNCIONALIDADES / SECOES OBRIGATORIAS  ★ IMPORTANTE", COLORS["neon_green"])
+            flbl("Liste CADA funcao/secao que DEVE existir (uma por linha):")
+            func_e = ctk.CTkTextbox(scroll, height=100,
+                                    font=ctk.CTkFont(family="Consolas", size=11),
+                                    fg_color=COLORS["bg_panel"], text_color=COLORS["text_primary"],
+                                    border_width=1, border_color=COLORS["neon_green"])
+            func_e.pack(fill="x", pady=(0, 4))
+            func_e.insert("1.0", dados.get("funcionalidades", ""))
+
+            # Exemplos de funcionalidades por tipo (atualiza ao mudar tipo)
+            exemplos_map = {
+                "App Web (HTML)":            "- Cadastro e listagem de itens\n- Busca e filtros em tempo real\n- Dashboard com KPIs\n- Exportar dados",
+                "Jogo HTML (Canvas)":        "- Nave/personagem com movimentacao\n- Inimigos com IA simples\n- Sistema de pontuacao\n- Tela de game over e restart",
+                "Landing Page":              "- Hero section com CTA\n- Beneficios com icones\n- Depoimentos de clientes\n- Formulario de captura de leads",
+                "Dashboard Web":             "- KPIs no topo (4 cards)\n- Grafico de barras CSS\n- Tabela com filtro por status\n- Exportar CSV",
+                "Apresentacao PowerPoint":   "- Slide de capa impactante\n- Problema e solucao\n- Dados e metricas de mercado\n- Proposta de valor\n- Proximos passos e CTA",
+                "Planilha Excel (.xlsx)":    "- Aba de dados principal\n- Aba de resumo/KPIs\n- Formulas de calculo automatico\n- Dados de exemplo reais",
+                "CRM / Sistema de Clientes": "- Adicionar/editar/remover leads\n- Status do lead (novo/ativo/fechado)\n- Busca por nome/empresa\n- Contador de leads por status",
+                "Calculadora / Simulador":   "- Campos de entrada numerica\n- Calculo instantaneo ao digitar\n- Resultado destacado\n- Botao limpar/resetar",
+                "Documento Word (.docx)":    "- Capa com titulo e data\n- Introducao com contexto\n- Desenvolvimento detalhado\n- Conclusao e proximos passos",
+                "Portfolio / Site Pessoal":  "- Hero com foto/nome e bio\n- Projetos com cards\n- Skills/tecnologias\n- Formulario de contato",
+            }
+            hint_lbl = ctk.CTkLabel(scroll, text="",
+                                    font=ctk.CTkFont(family="Consolas", size=9, slant="italic"),
+                                    text_color=COLORS["text_secondary"], wraplength=560,
+                                    justify="left")
+            hint_lbl.pack(anchor="w", pady=(0, 4))
+
+            def atualizar_hint(*_):
+                t = tipo_var.get()
+                ex = exemplos_map.get(t, "")
+                hint_lbl.configure(text=f"Sugestao para {t}:\n{ex}" if ex else "")
+            tipo_var.trace_add("write", atualizar_hint)
+            atualizar_hint()
+
+            # 5 PUBLICO
+            slbl("5. PUBLICO ALVO / USUARIO")
+            flbl("Quem vai usar? Qual e o perfil?")
+            pub_e = ctk.CTkEntry(scroll, font=ctk.CTkFont(family="Consolas", size=11),
+                                 fg_color=COLORS["bg_panel"], text_color=COLORS["text_primary"],
+                                 border_width=1, border_color=COLORS["neon_cyan"],
+                                 placeholder_text="Ex: dentistas SP, equipe de vendas, clientes finais, eu mesmo...")
+            pub_e.pack(fill="x", pady=(0, 4))
+            if dados.get("publico"):
+                pub_e.insert(0, dados["publico"])
+
+            # 6 ESTILO
+            slbl("6. ESTILO VISUAL / TOM")
+            estilo_var = tk.StringVar(value=dados.get("estilo", "Profissional e moderno"))
+            estilos = ["Profissional e moderno", "Corporativo / Formal",
+                       "Descontraido / Amigavel", "Tecnico / Detalhado",
+                       "Minimalista / Clean", "Colorido / Vibrante", "Dark / Hacker"]
+            ctk.CTkOptionMenu(
+                scroll, values=estilos, variable=estilo_var,
+                font=ctk.CTkFont(family="Consolas", size=11),
+                fg_color=COLORS["bg_card"], button_color=COLORS["warning"],
+                button_hover_color=COLORS["neon_orange"], dropdown_fg_color=COLORS["bg_card"],
+                text_color=COLORS["text_primary"], width=300
+            ).pack(anchor="w", pady=(0, 4))
+
+            # 7 EXTRAS
+            slbl("7. DADOS / DETALHES EXTRAS (opcional)")
+            flbl("Cores especificas, dados reais, exemplos, restricoes, idioma...")
+            extra_e = ctk.CTkEntry(scroll, font=ctk.CTkFont(family="Consolas", size=11),
+                                   fg_color=COLORS["bg_panel"], text_color=COLORS["text_primary"],
+                                   border_width=1, border_color=COLORS["text_secondary"],
+                                   placeholder_text="Ex: use verde e preto, preco R$2k, texto em portugues BR...")
+            extra_e.pack(fill="x", pady=(0, 4))
+            if dados.get("extras"):
+                extra_e.insert(0, dados["extras"])
+
+            # Abrir VS Code?
+            slbl("8. ABRIR VS CODE APOS CRIAR?")
+            abrir_vsc_var = tk.BooleanVar(value=dados.get("abrir_vscode", False))
+            ctk.CTkCheckBox(scroll, text="Sim, abrir no VS Code para editar o codigo",
+                            variable=abrir_vsc_var,
+                            font=ctk.CTkFont(family="Consolas", size=11),
+                            text_color=COLORS["text_secondary"],
+                            fg_color=COLORS["neon_blue"],
+                            border_color=COLORS["text_secondary"],
+                            checkmark_color=COLORS["bg_dark"]).pack(anchor="w", pady=(2, 10))
+
+            # ── Botão PRÓXIMO ──
+            def ir_passo2():
+                desc_txt = desc_e.get("1.0", "end").strip()
+                func_txt = func_e.get("1.0", "end").strip()
+                nome_txt = nome_e.get().strip()
+                if not desc_txt:
+                    from tkinter import messagebox
+                    messagebox.showwarning("Campo obrigatorio",
+                                           "Preencha a DESCRICAO (campo 3)!", parent=win)
+                    return
+                if not func_txt:
+                    from tkinter import messagebox
+                    messagebox.showwarning("Campo obrigatorio",
+                                           "Preencha as FUNCIONALIDADES (campo 4)!\n\nIsso e o mais importante — diz o que o app DEVE ter.", parent=win)
+                    return
+
+                dados["tipo_label"]     = tipo_var.get()
+                dados["tipo"]           = tipo_map.get(tipo_var.get(), "html")
+                dados["nome"]           = nome_txt or desc_txt[:40]
+                dados["descricao"]      = desc_txt
+                dados["funcionalidades"]= func_txt
+                dados["publico"]        = pub_e.get().strip()
+                dados["estilo"]         = estilo_var.get()
+                dados["extras"]         = extra_e.get().strip()
+                dados["abrir_vscode"]   = abrir_vsc_var.get()
+                mostrar_passo2()
+
+            btn_row = ctk.CTkFrame(root_frame, fg_color=COLORS["bg_card"],
+                                   corner_radius=0, height=55)
+            btn_row.pack(fill="x")
+            btn_row.pack_propagate(False)
+            ctk.CTkButton(btn_row, text="CANCELAR",
+                          font=ctk.CTkFont(family="Consolas", size=11),
+                          fg_color="transparent", border_color=COLORS["text_secondary"],
+                          border_width=1, text_color=COLORS["text_secondary"],
+                          width=100, height=36, corner_radius=4,
+                          command=win.destroy).pack(side="left", padx=10, pady=9)
+            ctk.CTkButton(btn_row, text="PROXIMO: VER PLANO  ▶",
+                          font=ctk.CTkFont(family="Consolas", size=12, weight="bold"),
+                          fg_color=COLORS["neon_blue"], hover_color="#2563eb",
+                          text_color=COLORS["bg_dark"],
+                          width=230, height=36, corner_radius=4,
+                          command=ir_passo2).pack(side="right", padx=10, pady=9)
+
+        # ════════════════════════════════════════════════════════════
+        # PASSO 2 — Preview do plano + confirmar
+        # ════════════════════════════════════════════════════════════
+        def mostrar_passo2():
+            for w in root_frame.winfo_children():
+                w.destroy()
+
+            step_lbl.configure(
+                text="PASSO 2 de 2  ▶  Revise o plano antes de criar  |  Edite se precisar")
+
+            # Header
+            hdr = ctk.CTkFrame(root_frame, fg_color=COLORS["bg_card"],
+                               corner_radius=0, height=50)
+            hdr.pack(fill="x")
+            hdr.pack_propagate(False)
+            ctk.CTkLabel(hdr, text="  📋 PLANO DO SEU APP — REVISE ANTES DE CRIAR",
+                         font=ctk.CTkFont(family="Consolas", size=13, weight="bold"),
+                         text_color=COLORS["neon_green"]).pack(side="left", padx=15, pady=10)
+            ctk.CTkLabel(hdr, text="PASSO 2 / 2",
+                         font=ctk.CTkFont(family="Consolas", size=10),
+                         text_color=COLORS["text_secondary"]).pack(side="right", padx=15)
+
+            scroll2 = ctk.CTkScrollableFrame(root_frame, fg_color=COLORS["bg_dark"])
+            scroll2.pack(fill="both", expand=True, padx=12, pady=8)
+
+            # Mostra o plano em cards
+            def card(titulo, valor, cor=COLORS["neon_cyan"]):
+                fr = ctk.CTkFrame(scroll2, fg_color=COLORS["bg_panel"],
+                                  corner_radius=8, border_width=1,
+                                  border_color=cor)
+                fr.pack(fill="x", pady=4)
+                ctk.CTkLabel(fr, text=f"  {titulo}",
+                             font=ctk.CTkFont(family="Consolas", size=9, weight="bold"),
+                             text_color=cor).pack(anchor="w", padx=8, pady=(6, 0))
+                ctk.CTkLabel(fr, text=f"  {valor}",
+                             font=ctk.CTkFont(family="Consolas", size=11),
+                             text_color=COLORS["text_primary"],
+                             wraplength=560, justify="left").pack(anchor="w", padx=8, pady=(2, 8))
+
+            card("TIPO",           dados["tipo_label"],      COLORS["neon_blue"])
+            card("NOME / TITULO",  dados["nome"],            COLORS["neon_blue"])
+            card("DESCRICAO",      dados["descricao"],       COLORS["neon_cyan"])
+
+            # Funcionalidades — lista visual
+            fr_func = ctk.CTkFrame(scroll2, fg_color=COLORS["bg_panel"],
+                                   corner_radius=8, border_width=1,
+                                   border_color=COLORS["neon_green"])
+            fr_func.pack(fill="x", pady=4)
+            ctk.CTkLabel(fr_func, text="  FUNCIONALIDADES / SECOES OBRIGATORIAS  ✅",
+                         font=ctk.CTkFont(family="Consolas", size=9, weight="bold"),
+                         text_color=COLORS["neon_green"]).pack(anchor="w", padx=8, pady=(6, 2))
+            for item in dados["funcionalidades"].splitlines():
+                item = item.strip("-• ").strip()
+                if item:
+                    ctk.CTkLabel(fr_func, text=f"   ▸  {item}",
+                                 font=ctk.CTkFont(family="Consolas", size=11),
+                                 text_color=COLORS["text_primary"]).pack(anchor="w", padx=8)
+            ctk.CTkFrame(fr_func, height=6, fg_color="transparent").pack()
+
+            if dados.get("publico"):
+                card("PUBLICO ALVO",   dados["publico"],    COLORS["neon_cyan"])
+            card("ESTILO VISUAL",  dados["estilo"],         COLORS["warning"])
+            if dados.get("extras"):
+                card("DADOS EXTRAS",   dados["extras"],     COLORS["text_secondary"])
+
+            vsc_txt = "SIM — Abrira o VS Code apos criar" if dados.get("abrir_vscode") else "NAO — Abrira direto no navegador/programa"
+            card("ABRIR VS CODE",  vsc_txt,                COLORS["text_secondary"])
+
+            # Aviso de qualidade
+            ctk.CTkLabel(scroll2,
+                         text="⚠  Quanto mais detalhadas as funcionalidades, mais perfeito sera o resultado.\n"
+                              "   Se precisar ajustar algum campo, clique em VOLTAR.",
+                         font=ctk.CTkFont(family="Consolas", size=9, slant="italic"),
+                         text_color=COLORS["neon_orange"],
+                         wraplength=580, justify="left").pack(anchor="w", pady=(10, 4))
+
+            # Botões
+            btn_row2 = ctk.CTkFrame(root_frame, fg_color=COLORS["bg_card"],
+                                    corner_radius=0, height=55)
+            btn_row2.pack(fill="x")
+            btn_row2.pack_propagate(False)
+
+            ctk.CTkButton(btn_row2, text="◀ VOLTAR",
+                          font=ctk.CTkFont(family="Consolas", size=11),
+                          fg_color="transparent", border_color=COLORS["neon_cyan"],
+                          border_width=1, text_color=COLORS["neon_cyan"],
+                          width=110, height=36, corner_radius=4,
+                          command=mostrar_passo1).pack(side="left", padx=10, pady=9)
+
+            ctk.CTkButton(btn_row2, text="CANCELAR",
+                          font=ctk.CTkFont(family="Consolas", size=11),
+                          fg_color="transparent", border_color=COLORS["text_secondary"],
+                          border_width=1, text_color=COLORS["text_secondary"],
+                          width=90, height=36, corner_radius=4,
+                          command=win.destroy).pack(side="left", padx=4, pady=9)
+
+            ctk.CTkButton(btn_row2,
+                          text="⚡ CONFIRMAR E CRIAR COM IA",
+                          font=ctk.CTkFont(family="Consolas", size=12, weight="bold"),
+                          fg_color=COLORS["neon_green"], hover_color="#16a34a",
+                          text_color=COLORS["bg_dark"],
+                          width=260, height=36, corner_radius=4,
+                          command=lambda: _confirmar_criar(win)).pack(side="right", padx=10, pady=9)
+
+        # ════════════════════════════════════════════════════════════
+        # CONFIRMAR E CRIAR
+        # ════════════════════════════════════════════════════════════
+        def _confirmar_criar(janela):
+            janela.destroy()
+
+            resumo = (
+                f"[CRIAR {dados['tipo_label'].upper()}]\n"
+                f"Nome: {dados['nome']}\n"
+                f"Descricao: {dados['descricao']}\n"
+                f"Funcionalidades:\n{dados['funcionalidades']}\n"
+                f"Publico: {dados.get('publico','geral')}\n"
+                f"Estilo: {dados['estilo']}"
+            )
+            self._msg("VOCE", resumo, "user")
+            self._msg("WILLIAM",
+                      f"Plano aprovado! Criando {dados['tipo_label']}...\n"
+                      f"A IA vai implementar TODAS as {len([l for l in dados['funcionalidades'].splitlines() if l.strip()])} "
+                      f"funcionalidades listadas. Aguarde...",
+                      "system")
+
+            def executar_criacao():
+                try:
+                    self.is_processing = True
+                    self.window.after(0, lambda: self.send_btn.configure(state="disabled", text="..."))
+                    self.window.after(0, lambda: self.processing_label.configure(
+                        text="[ IA CRIANDO — ISSO LEVA 10-30s... ]"))
+                    self.window.after(0, lambda: self.footer_right.configure(
+                        text="CRIANDO  ", text_color=COLORS["neon_orange"]))
+
+                    from src.skills.business.vscode_skill import VsCodeSkill
+                    skill = VsCodeSkill()
+                    params = {
+                        "planned":       True,
+                        "tipo":          dados["tipo"],
+                        "nome":          dados["nome"],
+                        "descricao":     dados["descricao"],
+                        "funcionalidades": dados["funcionalidades"],
+                        "publico":       dados.get("publico", ""),
+                        "estilo":        dados["estilo"],
+                        "extras":        dados.get("extras", ""),
+                        "abrir_vscode":  dados.get("abrir_vscode", False),
+                    }
+                    result = skill.execute("criar arquivo planejado", params=params)
+
+                    if result.success:
+                        self.window.after(0, lambda r=result.message:
+                                          self._msg("WILLIAM", r, "action"))
+                    else:
+                        self.window.after(0, lambda r=result.message:
+                                          self._msg("SYSTEM", f"Erro: {r}", "error"))
+
+                except Exception as e:
+                    self.window.after(0, lambda: self._msg("SYSTEM", f"Erro ao criar: {e}", "error"))
+                    log.error(f"Erro criacao planejada: {e}", exc_info=True)
+                finally:
+                    self.is_processing = False
+                    self.window.after(0, lambda: self.send_btn.configure(state="normal", text="EXEC"))
+                    self.window.after(0, lambda: self.processing_label.configure(text=""))
+                    self.window.after(0, lambda: self.footer_right.configure(
+                        text="READY  ", text_color=COLORS["neon_green"]))
+                    self.window.after(500, self._refresh_panel)
+
+            threading.Thread(target=executar_criacao, daemon=True).start()
+
+        # Inicia no passo 1
+        mostrar_passo1()
 
     # ================================================================
     # ATTACHMENT - Anexar qualquer arquivo no chat
@@ -1114,29 +1534,64 @@ Seja especifico e pratico. O usuario pode fazer perguntas de acompanhamento."""
         metrics_row.pack(fill="x")
 
         try:
-            # Memory stats
-            mem = self.memory.data
+            # --- Interacoes e sucesso da memoria ---
+            mem = self.memory.data if self.memory else {}
             count = mem.get("interaction_count", 0)
             rate = mem.get("success_rate", {})
-            total = rate.get("total", 0)
-            success = rate.get("success", 0)
-            pct = (success / total * 100) if total > 0 else 0
+            total_r = rate.get("total", 0)
+            success_r = rate.get("success", 0)
+            pct = int(success_r / total_r * 100) if total_r > 0 else 0
+
+            # --- Leads no pipeline ---
+            leads_count = 0
+            try:
+                import json
+                leads_path = Path("data/leads/pipeline_atual.json")
+                if leads_path.exists():
+                    leads = json.loads(leads_path.read_text(encoding="utf-8"))
+                    leads_count = len(leads)
+            except Exception:
+                pass
+
+            # --- Apps criados ---
+            apps_count = 0
+            try:
+                apps_dir = Path("data/apps")
+                if apps_dir.exists():
+                    apps_count = len([d for d in apps_dir.iterdir() if d.is_dir()])
+            except Exception:
+                pass
+
+            # --- Eventos de hoje ---
+            events_today = 0
+            try:
+                from src.core.observability import get_event_log
+                stats = get_event_log().get_stats()
+                events_today = stats.get("total", 0)
+            except Exception:
+                pass
+
+            # --- Tasks ---
+            task_total = 0
+            try:
+                if self.task_queue:
+                    ts = self.task_queue.get_stats()
+                    task_total = ts.get("total", ts.get("pending", 0))
+            except Exception:
+                pass
 
             metrics = [
-                ("Interacoes", str(count), COLORS["neon_cyan"]),
-                ("Sucesso", f"{pct:.0f}%", COLORS["neon_green"]),
-                ("Nivel", str(mem.get("personality", {}).get("nivel", 1)), COLORS["neon_purple"]),
-                ("XP", str(mem.get("personality", {}).get("xp", 0)), COLORS["neon_blue"]),
+                ("Interacoes", str(count),      COLORS["neon_cyan"]),
+                ("Sucesso",    f"{pct}%",        COLORS["neon_green"]),
+                ("Leads",      str(leads_count), COLORS["neon_purple"]),
+                ("Apps",       str(apps_count),  COLORS["neon_blue"]),
+                ("Eventos",    str(events_today),COLORS["neon_orange"]),
+                ("Tasks",      str(task_total),  COLORS["neon_yellow"]),
             ]
-
-            # Task stats
-            task_stats = self.task_queue.get_stats()
-            metrics.append(("Tasks", str(task_stats.get("total", 0)), COLORS["neon_orange"]))
-            metrics.append(("Ativas", str(task_stats.get("active", 0)), COLORS["neon_yellow"]))
 
             for label, value, color in metrics:
                 card = ctk.CTkFrame(metrics_row, fg_color=COLORS["bg_card"],
-                                     corner_radius=6, width=120, height=55)
+                                     corner_radius=6, width=110, height=55)
                 card.pack(side="left", padx=4, pady=4)
                 card.pack_propagate(False)
 
@@ -1192,38 +1647,38 @@ Seja especifico e pratico. O usuario pode fazer perguntas de acompanhamento."""
         """Atualiza log de eventos recentes."""
         try:
             from src.core.observability import get_event_log
-            events = get_event_log().get_recent(20)
+            events = get_event_log().get_recent(25)
 
             self.events_text.configure(state="normal")
             self.events_text.delete("1.0", "end")
 
             if not events:
-                self.events_text.insert("end", "  (nenhum evento registrado)\n")
+                self.events_text.insert("end", "  (nenhum evento ainda — interaja com o William para ver logs aqui)\n")
             else:
-                for event in events:
-                    ts = event.get("timestamp", "?")
-                    if "T" in ts:
+                for event in reversed(events):  # mais recentes primeiro
+                    # campos corretos do observability.py: ts, type, agent, risk, message
+                    ts = event.get("ts", event.get("timestamp", "?"))
+                    if ts and "T" in ts:
                         ts = ts.split("T")[1][:8]
-                    etype = event.get("event", "?")
+
+                    etype = event.get("type", event.get("event", "event"))
                     agent = event.get("agent", "system")
-                    risk = event.get("risk_level", "green")
+                    risk  = event.get("risk", event.get("risk_level", "green"))
+                    msg   = event.get("message", "")
 
                     risk_icon = {"green": "●", "yellow": "▲", "red": "◆"}.get(risk, "●")
-                    risk_color_map = {"green": "", "yellow": "[!]", "red": "[!!!]"}
-                    risk_tag = risk_color_map.get(risk, "")
+                    risk_tag  = {"yellow": " [!]", "red": " [!!!]"}.get(risk, "")
 
-                    data_str = ""
+                    line = f"  [{ts}] {risk_icon} {etype} ({agent}){risk_tag}"
+                    if msg:
+                        short_msg = msg[:80] + ("..." if len(msg) > 80 else "")
+                        line += f"\n    → {short_msg}"
+
                     data = event.get("data", {})
-                    if data:
-                        # Mostra dados resumidos
-                        parts = []
-                        for k, v in list(data.items())[:3]:
-                            parts.append(f"{k}={str(v)[:30]}")
-                        data_str = " | ".join(parts)
+                    if data and not msg:
+                        parts = [f"{k}={str(v)[:25]}" for k, v in list(data.items())[:3]]
+                        line += f"\n    {' | '.join(parts)}"
 
-                    line = f"  [{ts}] {risk_icon} {etype} ({agent}) {risk_tag}"
-                    if data_str:
-                        line += f"\n    {data_str}"
                     self.events_text.insert("end", line + "\n")
 
             self.events_text.configure(state="disabled")

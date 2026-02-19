@@ -28,14 +28,14 @@ class IntelligenceRouter:
 
     # Mapa: tipo → (provider, model)
     # Groq modelos: llama-3.3-70b-versatile (padrao)
-    # Ollama modelos: llama3.1:8b, mistral:7b, phi3:mini
+    # Ollama modelos: gemma3:4b (instalado localmente)
     ROUTING_MAP = {
         "business":  ("groq",   "llama-3.3-70b-versatile"),
         "creative":  ("groq",   "llama-3.3-70b-versatile"),
         "search":    ("groq",   "llama-3.3-70b-versatile"),
-        "code":      ("ollama", "mistral:7b"),
-        "general":   ("ollama", "llama3.1:8b"),
-        "quick":     ("ollama", "phi3:mini"),
+        "code":      ("ollama", "gemma3:4b"),
+        "general":   ("ollama", "gemma3:4b"),
+        "quick":     ("ollama", "gemma3:4b"),
     }
 
     # Palavras-chave para classificar o tipo de mensagem
