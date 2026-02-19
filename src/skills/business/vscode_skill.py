@@ -408,25 +408,169 @@ if __name__ == "__main__":
         return SkillResult(success=True, message=f"[APP CRIADO] CRM Simples\n\nRodando em: http://localhost:5001\nAberto no VS Code!\nArquivo: {pasta}/crm.py")
 
     def _criar_app_generico(self, command: str) -> SkillResult:
+        """Usa IA para planejar e gerar um app completo e funcional."""
         desc = self._extrair_descricao(command)
         nome_projeto = f"app_{desc.replace(' ', '_')}_{datetime.now().strftime('%H%M')}"
         pasta = APPS_DIR / nome_projeto
         pasta.mkdir(parents=True, exist_ok=True)
 
-        html = f"""<!DOCTYPE html>
-<html lang="pt-BR">
-<head><meta charset="UTF-8"><title>{desc.title()}</title>
-<style>body{{font-family:Segoe UI;background:#0f1117;color:#f1f5f9;margin:0;display:flex;align-items:center;justify-content:center;min-height:100vh}}
-.card{{background:#161921;padding:40px;border-radius:15px;text-align:center;border:1px solid #2d3748;max-width:600px}}
-h1{{color:#3b82f6}} p{{color:#94a3b8;margin:20px 0}} .btn{{background:#3b82f6;color:white;padding:14px 30px;border:none;border-radius:8px;font-size:1rem;cursor:pointer}}
-</style></head>
-<body><div class="card">
-<h1>{desc.title()}</h1>
-<p>App criado pelo William v5. Personalize no VS Code para adicionar suas funcionalidades.</p>
-<button class="btn">Comecar</button>
-</div></body></html>"""
+        # Pede para IA gerar o HTML completo do app
+        prompt = f"""Voce e um desenvolvedor front-end expert em HTML, CSS e JavaScript.
+Crie um app web COMPLETO, BONITO e FUNCIONAL para: {desc}
 
-        (pasta / "index.html").write_text(html, encoding="utf-8")
+REQUISITOS OBRIGATORIOS:
+1. Design moderno dark theme (background #0f1117, cards #161921, accent #3b82f6)
+2. Totalmente funcional com JavaScript puro (sem frameworks externos)
+3. Responsivo (mobile-first)
+4. Interface REAL com funcionalidades que fazem sentido para {desc}
+5. Pelo menos 3 secoes ou funcionalidades distintas
+6. Dados de exemplo realistas (nao deixe campos vazios)
+
+ESTRUTURA ESPERADA dependendo do tipo de app:
+- Se for ferramenta/calculadora: inputs + logica JS funcionando + resultado visual
+- Se for dashboard: KPIs com numeros + tabela com dados + graficos simples com CSS/JS
+- Se for landing page: hero + beneficios especificos + formulario + CTA
+- Se for CRM/lista: CRUD basico com localStorage + filtros + status visual
+- Se for outro: interprete e crie algo que realmente funcione
+
+Retorne APENAS o codigo HTML completo (doctype ate /html), sem explicacoes.
+O codigo deve rodar diretamente no navegador sem dependencias externas."""
+
+        html_gerado = ""
+        try:
+            from src.core.ai_engine import get_engine
+            engine = get_engine()
+            resposta = engine.chat_with_fallback(prompt)
+            # Extrai apenas o bloco HTML da resposta
+            if resposta and "<!DOCTYPE" in resposta.upper():
+                inicio = resposta.upper().find("<!DOCTYPE")
+                fim = resposta.rfind("</html>")
+                if fim > inicio:
+                    html_gerado = resposta[inicio:fim + 7]
+        except Exception as e:
+            log.warning(f"IA nao disponivel para criar app: {e}")
+
+        # Fallback robusto se IA nao retornou HTML valido
+        if not html_gerado or len(html_gerado) < 200:
+            html_gerado = f"""<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{desc.title()}</title>
+    <style>
+        *{{margin:0;padding:0;box-sizing:border-box}}
+        body{{font-family:'Segoe UI',sans-serif;background:#0f1117;color:#f1f5f9;min-height:100vh}}
+        .header{{background:#161921;padding:20px 30px;border-bottom:1px solid #2d3748;display:flex;align-items:center;justify-content:space-between}}
+        .header h1{{color:#3b82f6;font-size:1.4rem}}
+        .badge{{background:#3b82f6;color:white;padding:4px 10px;border-radius:20px;font-size:0.8rem}}
+        .container{{max-width:900px;margin:30px auto;padding:0 20px}}
+        .kpis{{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-bottom:25px}}
+        .kpi{{background:#161921;border:1px solid #2d3748;border-radius:10px;padding:20px;text-align:center}}
+        .kpi .valor{{font-size:2rem;font-weight:700;color:#3b82f6}}
+        .kpi .label{{color:#94a3b8;font-size:0.85rem;margin-top:5px}}
+        .card{{background:#161921;border:1px solid #2d3748;border-radius:10px;padding:25px;margin-bottom:20px}}
+        .card h2{{color:#f1f5f9;margin-bottom:15px;font-size:1.1rem}}
+        .form-row{{display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap}}
+        input,select,textarea{{flex:1;padding:10px 14px;background:#1c1f2b;border:1px solid #2d3748;border-radius:6px;color:#f1f5f9;font-size:0.95rem;min-width:150px}}
+        button{{padding:10px 20px;background:#3b82f6;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600}}
+        button:hover{{background:#2563eb}}
+        .btn-green{{background:#22c55e}} .btn-green:hover{{background:#16a34a}}
+        .btn-red{{background:#ef4444}} .btn-red:hover{{background:#dc2626}}
+        table{{width:100%;border-collapse:collapse}}
+        th{{background:#1c1f2b;padding:12px;text-align:left;color:#94a3b8;font-size:0.85rem}}
+        td{{padding:12px;border-top:1px solid #2d3748}}
+        .tag{{padding:3px 10px;border-radius:20px;font-size:0.8rem;font-weight:600}}
+        .tag-green{{background:#14532d;color:#22c55e}} .tag-yellow{{background:#451a03;color:#f59e0b}} .tag-blue{{background:#1e3a5f;color:#3b82f6}}
+        #notif{{position:fixed;bottom:20px;right:20px;background:#22c55e;color:white;padding:12px 20px;border-radius:8px;display:none;z-index:999;font-weight:600}}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚡ {desc.title()}</h1>
+        <span class="badge">William v6</span>
+    </div>
+    <div class="container">
+        <div class="kpis">
+            <div class="kpi"><div class="valor" id="kp1">0</div><div class="label">Total de Itens</div></div>
+            <div class="kpi"><div class="valor" id="kp2">0</div><div class="label">Ativos</div></div>
+            <div class="kpi"><div class="valor" id="kp3">0%</div><div class="label">Taxa de Conclusao</div></div>
+        </div>
+        <div class="card">
+            <h2>➕ Adicionar Item</h2>
+            <div class="form-row">
+                <input type="text" id="nome" placeholder="Nome do item *" required>
+                <input type="text" id="detalhe" placeholder="Detalhe / descricao">
+                <select id="status">
+                    <option value="ativo">Ativo</option>
+                    <option value="pendente">Pendente</option>
+                    <option value="concluido">Concluido</option>
+                </select>
+                <button class="btn-green" onclick="adicionar()">+ Adicionar</button>
+            </div>
+        </div>
+        <div class="card">
+            <h2>📋 Lista de Itens</h2>
+            <div class="form-row" style="margin-bottom:15px">
+                <input type="text" id="busca" placeholder="Buscar..." oninput="filtrar()">
+                <button onclick="limparTudo()" class="btn-red">Limpar Tudo</button>
+            </div>
+            <table id="tabela">
+                <thead><tr><th>Nome</th><th>Detalhe</th><th>Status</th><th>Data</th><th>Acao</th></tr></thead>
+                <tbody id="tbody"></tbody>
+            </table>
+        </div>
+    </div>
+    <div id="notif">✓ Salvo!</div>
+<script>
+    const CHAVE = 'app_{desc.replace(" ", "_")}';
+    function carregar() {{ return JSON.parse(localStorage.getItem(CHAVE) || '[]'); }}
+    function salvar(d) {{ localStorage.setItem(CHAVE, JSON.stringify(d)); atualizar(); }}
+    function notif() {{ const n=document.getElementById('notif'); n.style.display='block'; setTimeout(()=>n.style.display='none',2000); }}
+    function adicionar() {{
+        const nome = document.getElementById('nome').value.trim();
+        if (!nome) {{ alert('Informe o nome!'); return; }}
+        const dados = carregar();
+        dados.push({{ id: Date.now(), nome, detalhe: document.getElementById('detalhe').value, status: document.getElementById('status').value, data: new Date().toLocaleDateString('pt-BR') }});
+        salvar(dados);
+        document.getElementById('nome').value=''; document.getElementById('detalhe').value='';
+        notif();
+    }}
+    function remover(id) {{ salvar(carregar().filter(d => d.id !== id)); }}
+    function filtrar() {{
+        const t = document.getElementById('busca').value.toLowerCase();
+        document.querySelectorAll('#tbody tr').forEach(tr => {{
+            tr.style.display = tr.textContent.toLowerCase().includes(t) ? '' : 'none';
+        }});
+    }}
+    function limparTudo() {{ if(confirm('Limpar todos os itens?')) {{ salvar([]); }} }}
+    function atualizar() {{
+        const dados = carregar();
+        const tbody = document.getElementById('tbody');
+        const tags = {{ ativo:'tag-green', pendente:'tag-yellow', concluido:'tag-blue' }};
+        tbody.innerHTML = dados.map(d => `<tr>
+            <td><strong>${{d.nome}}</strong></td>
+            <td style="color:#94a3b8">${{d.detalhe||'-'}}</td>
+            <td><span class="tag ${{tags[d.status]||'tag-blue'}}">${{d.status}}</span></td>
+            <td style="color:#94a3b8">${{d.data}}</td>
+            <td><button class="btn-red" style="padding:5px 12px;font-size:0.8rem" onclick="remover(${{d.id}})">✕</button></td>
+        </tr>`).join('');
+        document.getElementById('kp1').textContent = dados.length;
+        document.getElementById('kp2').textContent = dados.filter(d=>d.status==='ativo').length;
+        const conc = dados.filter(d=>d.status==='concluido').length;
+        document.getElementById('kp3').textContent = dados.length ? Math.round(conc/dados.length*100)+'%' : '0%';
+    }}
+    atualizar();
+</script>
+</body>
+</html>"""
+
+        (pasta / "index.html").write_text(html_gerado, encoding="utf-8")
+        (pasta / "README.md").write_text(
+            f"# {desc.title()}\nCriado por William v6 com IA\n\nAbra index.html no navegador.",
+            encoding="utf-8"
+        )
+
         self._abrir_vscode(pasta)
         try:
             import webbrowser
@@ -439,9 +583,10 @@ h1{{color:#3b82f6}} p{{color:#94a3b8;margin:20px 0}} .btn{{background:#3b82f6;co
 PASTA: {pasta}
 STATUS: Aberto no VS Code e navegador
 
-Para criar apps especificos, use:
-  "crie uma landing page para [nicho]"
-  "crie um dashboard de vendas"
-  "crie uma calculadora de ROI"
-  "crie um CRM simples"
-""")
+O app foi gerado pela IA com funcionalidades reais para: {desc}
+Personalize o codigo no VS Code conforme precisar.
+
+PROXIMOS PASSOS:
+  "conecte este app com n8n para {desc}" → Automacao
+  "crie uma landing page para {desc}" → Pagina de captura de leads
+""", data={"pasta": str(pasta)})

@@ -808,26 +808,27 @@ class WilliamFinal:
 
     def _receita_dialog(self, action: str):
         """Abre dialog para acoes de negocio e envia comando ao chat."""
-        commands = {
-            "novo_funil": "crie funil para ",
-            "ver_leads": "ver pipeline",
-            "gerar_copy": "gere script para ",
-            "criar_app": "crie um app de landing page para ",
-            "estrategia": "defina estrategia para ",
-            "n8n_flows": "listar workflows",
+        dialogs = {
+            "novo_funil":  ("crie funil para ", "Criar Funil de Vendas",
+                            "Para qual nicho?\n(Ex: dentistas, academias, imobiliaria)"),
+            "ver_leads":   ("ver pipeline", None, None),
+            "gerar_copy":  ("gere script de abordagem para ", "Gerar Script de Vendas",
+                            "Para qual nicho ou produto?\n(Ex: consultoria, software, curso online)"),
+            "criar_app":   ("crie um app ", "Criar App com IA",
+                            "Descreva o app que deseja:\n(Ex: CRM de clientes, dashboard de vendas, calculadora de ROI, landing page para dentistas, sistema de agendamento)"),
+            "estrategia":  ("defina estrategia para ", "Estrategia de Negocios",
+                            "Para qual nicho ou produto?\n(Ex: clinica, loja virtual, agencia de marketing)"),
+            "n8n_flows":   ("listar workflows", None, None),
         }
-        cmd = commands.get(action, "")
+        config = dialogs.get(action, (action, None, None))
+        cmd_base, title, text = config
+        cmd = cmd_base
 
-        needs_input = action in {"novo_funil", "gerar_copy", "criar_app", "estrategia"}
-
-        if needs_input:
-            dialog = ctk.CTkInputDialog(
-                text=f"Qual o nicho / descricao?\n(Ex: dentistas, restaurantes, marketing)",
-                title="William - Informacao"
-            )
-            nicho = dialog.get_input()
-            if nicho:
-                cmd = cmd + nicho
+        if title and text:
+            dialog = ctk.CTkInputDialog(text=text, title=f"William — {title}")
+            entrada = dialog.get_input()
+            if entrada and entrada.strip():
+                cmd = cmd + entrada.strip()
             else:
                 return
 
@@ -1114,29 +1115,64 @@ Seja especifico e pratico. O usuario pode fazer perguntas de acompanhamento."""
         metrics_row.pack(fill="x")
 
         try:
-            # Memory stats
-            mem = self.memory.data
+            # --- Interacoes e sucesso da memoria ---
+            mem = self.memory.data if self.memory else {}
             count = mem.get("interaction_count", 0)
             rate = mem.get("success_rate", {})
-            total = rate.get("total", 0)
-            success = rate.get("success", 0)
-            pct = (success / total * 100) if total > 0 else 0
+            total_r = rate.get("total", 0)
+            success_r = rate.get("success", 0)
+            pct = int(success_r / total_r * 100) if total_r > 0 else 0
+
+            # --- Leads no pipeline ---
+            leads_count = 0
+            try:
+                import json
+                leads_path = Path("data/leads/pipeline_atual.json")
+                if leads_path.exists():
+                    leads = json.loads(leads_path.read_text(encoding="utf-8"))
+                    leads_count = len(leads)
+            except Exception:
+                pass
+
+            # --- Apps criados ---
+            apps_count = 0
+            try:
+                apps_dir = Path("data/apps")
+                if apps_dir.exists():
+                    apps_count = len([d for d in apps_dir.iterdir() if d.is_dir()])
+            except Exception:
+                pass
+
+            # --- Eventos de hoje ---
+            events_today = 0
+            try:
+                from src.core.observability import get_event_log
+                stats = get_event_log().get_stats()
+                events_today = stats.get("total", 0)
+            except Exception:
+                pass
+
+            # --- Tasks ---
+            task_total = 0
+            try:
+                if self.task_queue:
+                    ts = self.task_queue.get_stats()
+                    task_total = ts.get("total", ts.get("pending", 0))
+            except Exception:
+                pass
 
             metrics = [
-                ("Interacoes", str(count), COLORS["neon_cyan"]),
-                ("Sucesso", f"{pct:.0f}%", COLORS["neon_green"]),
-                ("Nivel", str(mem.get("personality", {}).get("nivel", 1)), COLORS["neon_purple"]),
-                ("XP", str(mem.get("personality", {}).get("xp", 0)), COLORS["neon_blue"]),
+                ("Interacoes", str(count),      COLORS["neon_cyan"]),
+                ("Sucesso",    f"{pct}%",        COLORS["neon_green"]),
+                ("Leads",      str(leads_count), COLORS["neon_purple"]),
+                ("Apps",       str(apps_count),  COLORS["neon_blue"]),
+                ("Eventos",    str(events_today),COLORS["neon_orange"]),
+                ("Tasks",      str(task_total),  COLORS["neon_yellow"]),
             ]
-
-            # Task stats
-            task_stats = self.task_queue.get_stats()
-            metrics.append(("Tasks", str(task_stats.get("total", 0)), COLORS["neon_orange"]))
-            metrics.append(("Ativas", str(task_stats.get("active", 0)), COLORS["neon_yellow"]))
 
             for label, value, color in metrics:
                 card = ctk.CTkFrame(metrics_row, fg_color=COLORS["bg_card"],
-                                     corner_radius=6, width=120, height=55)
+                                     corner_radius=6, width=110, height=55)
                 card.pack(side="left", padx=4, pady=4)
                 card.pack_propagate(False)
 
@@ -1192,38 +1228,38 @@ Seja especifico e pratico. O usuario pode fazer perguntas de acompanhamento."""
         """Atualiza log de eventos recentes."""
         try:
             from src.core.observability import get_event_log
-            events = get_event_log().get_recent(20)
+            events = get_event_log().get_recent(25)
 
             self.events_text.configure(state="normal")
             self.events_text.delete("1.0", "end")
 
             if not events:
-                self.events_text.insert("end", "  (nenhum evento registrado)\n")
+                self.events_text.insert("end", "  (nenhum evento ainda — interaja com o William para ver logs aqui)\n")
             else:
-                for event in events:
-                    ts = event.get("timestamp", "?")
-                    if "T" in ts:
+                for event in reversed(events):  # mais recentes primeiro
+                    # campos corretos do observability.py: ts, type, agent, risk, message
+                    ts = event.get("ts", event.get("timestamp", "?"))
+                    if ts and "T" in ts:
                         ts = ts.split("T")[1][:8]
-                    etype = event.get("event", "?")
+
+                    etype = event.get("type", event.get("event", "event"))
                     agent = event.get("agent", "system")
-                    risk = event.get("risk_level", "green")
+                    risk  = event.get("risk", event.get("risk_level", "green"))
+                    msg   = event.get("message", "")
 
                     risk_icon = {"green": "●", "yellow": "▲", "red": "◆"}.get(risk, "●")
-                    risk_color_map = {"green": "", "yellow": "[!]", "red": "[!!!]"}
-                    risk_tag = risk_color_map.get(risk, "")
+                    risk_tag  = {"yellow": " [!]", "red": " [!!!]"}.get(risk, "")
 
-                    data_str = ""
+                    line = f"  [{ts}] {risk_icon} {etype} ({agent}){risk_tag}"
+                    if msg:
+                        short_msg = msg[:80] + ("..." if len(msg) > 80 else "")
+                        line += f"\n    → {short_msg}"
+
                     data = event.get("data", {})
-                    if data:
-                        # Mostra dados resumidos
-                        parts = []
-                        for k, v in list(data.items())[:3]:
-                            parts.append(f"{k}={str(v)[:30]}")
-                        data_str = " | ".join(parts)
+                    if data and not msg:
+                        parts = [f"{k}={str(v)[:25]}" for k, v in list(data.items())[:3]]
+                        line += f"\n    {' | '.join(parts)}"
 
-                    line = f"  [{ts}] {risk_icon} {etype} ({agent}) {risk_tag}"
-                    if data_str:
-                        line += f"\n    {data_str}"
                     self.events_text.insert("end", line + "\n")
 
             self.events_text.configure(state="disabled")
