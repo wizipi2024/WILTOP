@@ -51,6 +51,14 @@ REGRAS CRITICAS:
 15. PROIBIDO: responder "answer" quando o usuario pediu ACAO. Se pediu algo, EXECUTE.
 16. Para criar arquivo: file_content deve ter \\n para quebras de linha reais.
 
+PROIBICOES ABSOLUTAS (NUNCA FACA ISSO):
+- NUNCA crie um arquivo .py para abrir o PowerPoint/Excel/Word. O sistema ja cuida disso.
+- NUNCA use python-pptx, openpyxl ou python-docx diretamente no Brain.
+- NUNCA crie "apresentacao_xxx.py" ou "planilha_xxx.py" como script intermediario.
+- Se o pedido for sobre PowerPoint, Excel, Word, apresentacao, planilha ou documento Office:
+  responda {{"action":"answer","answer":"Aguarde, criando o arquivo...","description":"office"}}
+  pois o sistema ja cria o arquivo automaticamente via VsCodeSkill.
+
 EXEMPLOS:
 Pedido: "crie um jogo da cobrinha"
 {{"action":"generate_file","filename":"jogo_cobrinha.py","file_content":"import tkinter as tk\\nimport random\\n\\nclass SnakeGame:\\n    def __init__(self):\\n        self.root = tk.Tk()\\n        self.root.title('Snake Game')\\n        ...","description":"Jogo da cobrinha criado"}}
@@ -60,6 +68,9 @@ Pedido: "qual tamanho da minha pasta downloads"
 
 Pedido: "ola, tudo bem?"
 {{"action":"answer","answer":"Tudo otimo! Pronto pra executar qualquer coisa!","description":"saudacao"}}
+
+Pedido: "crie uma apresentacao powerpoint sobre vendas"
+{{"action":"answer","answer":"Criando sua apresentacao PowerPoint agora...","description":"office"}}
 """
 
 
@@ -70,8 +81,41 @@ class AIBrain:
         self.engine = engine
         self.user_home = USER_HOME
 
+    # Palavras-chave que NUNCA devem chegar ao Brain — são geridas pelo VsCodeSkill
+    _OFFICE_KEYWORDS = [
+        "powerpoint", "apresentacao", "apresentação", "slides", ".pptx", "pptx",
+        "planilha", "excel", ".xlsx", "xlsx",
+        "word", "documento word", ".docx", "docx",
+        "crie um app", "cria um app", "crie uma landing",
+        "crie um dashboard", "crie um site", "crie um crm",
+    ]
+
     def process(self, message: str, context: List[Dict] = None) -> Dict:
         """Processa pedido usando IA. SEMPRE tenta executar."""
+        # Intercepta pedidos de Office/App — delega ao VsCodeSkill em vez de gerar Python
+        msg_lower = message.lower()
+        if any(kw in msg_lower for kw in self._OFFICE_KEYWORDS):
+            try:
+                from src.skills.business.vscode_skill import VsCodeSkill
+                skill = VsCodeSkill()
+                skill_result = skill.execute(message)
+                if skill_result and skill_result.success:
+                    return {
+                        "success": True,
+                        "message": skill_result.message,
+                        "type": "ai_generate",
+                        "description": "Arquivo criado com sucesso",
+                        "data": skill_result.data or {},
+                    }
+            except Exception as e:
+                log.warning(f"Brain->VsCodeSkill fallback falhou: {e}")
+            # Se VsCodeSkill falhar, retorna mensagem de aviso em vez de tentar gerar Python
+            return {
+                "success": False,
+                "message": "Erro ao criar arquivo. Tente via botao CRIAR APP na aba RECEITA.",
+                "type": "error",
+            }
+
         try:
             brain_context = [{"role": "system", "content": BRAIN_SYSTEM_PROMPT}]
             if context:

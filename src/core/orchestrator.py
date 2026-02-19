@@ -137,11 +137,48 @@ class AgentOrchestrator:
                 result["summary"] = exec_result.get("summary", "")
                 return result
 
+        # ===== PASSO 2.3: Detecção DIRETA de criação Office/App (antes do Brain) =====
+        # Garante que PowerPoint/Excel/Word/App sejam sempre roteados para VsCodeSkill
+        _msg_lower = normalized_msg.lower()
+        _office_keywords = [
+            "powerpoint", "apresentacao", "apresentação", "slides", "pptx",
+            "planilha", "excel", "xlsx",
+            "word", "docx", "documento word",
+            "crie um app", "cria um app", "crie um site", "crie uma landing",
+            "crie uma ferramenta", "crie um dashboard", "crie um crm",
+            "criar app", "criar powerpoint", "criar apresentacao",
+            "criar planilha", "criar excel", "criar documento",
+            "faca um app", "faca uma apresentacao", "faca uma planilha",
+        ]
+        _is_office_request = any(kw in _msg_lower for kw in _office_keywords)
+
+        if _is_office_request:
+            try:
+                from src.skills.business.vscode_skill import VsCodeSkill
+                _vscode = VsCodeSkill()
+                _vscode_result = _vscode.execute(normalized_msg)
+                if _vscode_result and _vscode_result.success:
+                    _action = {
+                        "success": True,
+                        "type": "skill_business",
+                        "message": _vscode_result.message,
+                        "data": _vscode_result.data or {},
+                        "proof": None,
+                        "risk_level": "green",
+                    }
+                    result["executed"] = True
+                    result["actions"] = [_action]
+                    result["summary"] = _vscode_result.message
+                    result["skill"] = "vscode"
+                    return result
+            except Exception as _ve:
+                log.warning(f"VsCodeSkill direto falhou: {_ve}, continuando fluxo normal...")
+
         # ===== PASSO 2.5: Skill System (busca e executa skills) =====
         try:
             from src.skills.skill_manager import get_skill_manager
             skill_mgr = get_skill_manager()
-            skill_match = skill_mgr.find_skill(normalized_msg, min_score=0.6)
+            skill_match = skill_mgr.find_skill(normalized_msg, min_score=0.15)
 
             if skill_match:
                 skill, score = skill_match

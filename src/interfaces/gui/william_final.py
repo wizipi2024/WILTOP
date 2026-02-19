@@ -808,14 +808,16 @@ class WilliamFinal:
 
     def _receita_dialog(self, action: str):
         """Abre dialog para acoes de negocio e envia comando ao chat."""
+        if action == "criar_app":
+            self._dialog_criar_app()
+            return
+
         dialogs = {
             "novo_funil":  ("crie funil para ", "Criar Funil de Vendas",
                             "Para qual nicho?\n(Ex: dentistas, academias, imobiliaria)"),
             "ver_leads":   ("ver pipeline", None, None),
             "gerar_copy":  ("gere script de abordagem para ", "Gerar Script de Vendas",
                             "Para qual nicho ou produto?\n(Ex: consultoria, software, curso online)"),
-            "criar_app":   ("crie um app ", "Criar App com IA",
-                            "Descreva o app que deseja:\n(Ex: CRM de clientes, dashboard de vendas, calculadora de ROI, landing page para dentistas, sistema de agendamento)"),
             "estrategia":  ("defina estrategia para ", "Estrategia de Negocios",
                             "Para qual nicho ou produto?\n(Ex: clinica, loja virtual, agencia de marketing)"),
             "n8n_flows":   ("listar workflows", None, None),
@@ -836,6 +838,229 @@ class WilliamFinal:
             self.input.delete(0, "end")
             self.input.insert(0, cmd)
             self._send()
+
+    def _dialog_criar_app(self):
+        """Dialog multi-step para criacao de app/arquivo com planejamento de IA."""
+        import tkinter as tk
+
+        # Janela principal do wizard
+        win = ctk.CTkToplevel(self.window)
+        win.title("William — Criar App / Arquivo")
+        win.geometry("600x680")
+        win.resizable(False, False)
+        win.configure(fg_color=COLORS["bg_dark"])
+        win.lift()
+        win.focus_force()
+        win.grab_set()
+
+        # Header
+        header = ctk.CTkFrame(win, fg_color=COLORS["bg_card"], corner_radius=0, height=50)
+        header.pack(fill="x")
+        header.pack_propagate(False)
+        ctk.CTkLabel(header, text="  ⚡ CRIAR APP / ARQUIVO COM IA",
+                     font=ctk.CTkFont(family="Consolas", size=14, weight="bold"),
+                     text_color=COLORS["neon_blue"]).pack(side="left", padx=15, pady=10)
+
+        scroll = ctk.CTkScrollableFrame(win, fg_color=COLORS["bg_dark"])
+        scroll.pack(fill="both", expand=True, padx=10, pady=10)
+
+        def section_label(text, color=COLORS["neon_cyan"]):
+            ctk.CTkLabel(scroll, text=text,
+                         font=ctk.CTkFont(family="Consolas", size=10, weight="bold"),
+                         text_color=color).pack(anchor="w", pady=(12, 2))
+
+        def field_label(text):
+            ctk.CTkLabel(scroll, text=text,
+                         font=ctk.CTkFont(family="Consolas", size=10),
+                         text_color=COLORS["text_secondary"]).pack(anchor="w", pady=(6, 2))
+
+        # === TIPO ===
+        section_label("1. TIPO DE ARQUIVO / APP")
+        field_label("Selecione o que deseja criar:")
+
+        tipo_var = tk.StringVar(value="App Web (HTML)")
+        tipos = [
+            "App Web (HTML)",
+            "Apresentacao PowerPoint (.pptx)",
+            "Planilha Excel (.xlsx)",
+            "Documento Word (.docx)",
+            "Landing Page",
+            "Dashboard Web",
+            "CRM / Sistema de Clientes",
+            "Calculadora / Simulador",
+        ]
+        tipo_frame = ctk.CTkFrame(scroll, fg_color=COLORS["bg_panel"], corner_radius=6)
+        tipo_frame.pack(fill="x", pady=(0, 5))
+        tipo_menu = ctk.CTkOptionMenu(
+            tipo_frame, values=tipos, variable=tipo_var,
+            font=ctk.CTkFont(family="Consolas", size=11),
+            fg_color=COLORS["bg_card"], button_color=COLORS["neon_blue"],
+            button_hover_color=COLORS["neon_blue"], dropdown_fg_color=COLORS["bg_card"],
+            text_color=COLORS["text_primary"], width=400
+        )
+        tipo_menu.pack(padx=10, pady=8)
+
+        # === DESCRIÇÃO ===
+        section_label("2. DESCRICAO DO QUE VOCE QUER")
+        field_label("Descreva em detalhes o que o arquivo deve conter / fazer:")
+        desc_entry = ctk.CTkTextbox(scroll, height=80, font=ctk.CTkFont(family="Consolas", size=11),
+                                     fg_color=COLORS["bg_panel"], text_color=COLORS["text_primary"],
+                                     border_width=1, border_color=COLORS["neon_blue"])
+        desc_entry.pack(fill="x", pady=(0, 5))
+        desc_entry.insert("1.0", "Ex: apresentacao de vendas para clinicas odontologicas com foco em implantes")
+
+        # === PÚBLICO ===
+        section_label("3. PUBLICO ALVO")
+        field_label("Para quem e este arquivo / quem vai usar?")
+        publico_entry = ctk.CTkEntry(scroll, font=ctk.CTkFont(family="Consolas", size=11),
+                                      fg_color=COLORS["bg_panel"], text_color=COLORS["text_primary"],
+                                      border_width=1, border_color=COLORS["neon_cyan"],
+                                      placeholder_text="Ex: dentistas, gestores, clientes, equipe de vendas...")
+        publico_entry.pack(fill="x", pady=(0, 5))
+
+        # === FUNCIONALIDADES ===
+        section_label("4. FUNCIONALIDADES / CONTEUDO PRINCIPAL")
+        field_label("Quais funcoes ou secoes deve ter? (uma por linha ou separadas por virgula)")
+        func_entry = ctk.CTkTextbox(scroll, height=70, font=ctk.CTkFont(family="Consolas", size=11),
+                                     fg_color=COLORS["bg_panel"], text_color=COLORS["text_primary"],
+                                     border_width=1, border_color=COLORS["neon_green"])
+        func_entry.pack(fill="x", pady=(0, 5))
+        func_entry.insert("1.0", "Ex: grafico de resultados, tabela de precos, formulario de contato, calculo de ROI")
+
+        # === ESTILO ===
+        section_label("5. ESTILO / TOM")
+        field_label("Como deve parecer / soar?")
+        estilo_var = tk.StringVar(value="Profissional e moderno")
+        estilos = [
+            "Profissional e moderno",
+            "Corporativo / Formal",
+            "Descontraido / Friendly",
+            "Tecnico / Detalhado",
+            "Minimalista / Clean",
+            "Colorido / Vibrante",
+        ]
+        estilo_menu = ctk.CTkOptionMenu(
+            scroll, values=estilos, variable=estilo_var,
+            font=ctk.CTkFont(family="Consolas", size=11),
+            fg_color=COLORS["bg_card"], button_color=COLORS["warning"],
+            button_hover_color=COLORS["neon_orange"], dropdown_fg_color=COLORS["bg_card"],
+            text_color=COLORS["text_primary"], width=300
+        )
+        estilo_menu.pack(anchor="w", pady=(0, 5))
+
+        # === EXTRAS ===
+        section_label("6. INFORMACOES ADICIONAIS (opcional)")
+        field_label("Dados especificos, cores, logotipo, exemplos de conteudo...")
+        extras_entry = ctk.CTkEntry(scroll, font=ctk.CTkFont(family="Consolas", size=11),
+                                     fg_color=COLORS["bg_panel"], text_color=COLORS["text_primary"],
+                                     border_width=1, border_color=COLORS["text_secondary"],
+                                     placeholder_text="Ex: usar logo azul, incluir tabela de precos R$2k-5k/mes...")
+        extras_entry.pack(fill="x", pady=(0, 15))
+
+        # === BOTÕES ===
+        btn_frame = ctk.CTkFrame(win, fg_color=COLORS["bg_card"], corner_radius=0, height=55)
+        btn_frame.pack(fill="x", side="bottom")
+        btn_frame.pack_propagate(False)
+
+        def cancelar():
+            win.destroy()
+
+        def criar():
+            descricao = desc_entry.get("1.0", "end").strip()
+            if not descricao or descricao.startswith("Ex:"):
+                from tkinter import messagebox
+                messagebox.showwarning("Campo obrigatorio",
+                                       "Preencha a descricao do que deseja criar!",
+                                       parent=win)
+                return
+
+            tipo_selecionado = tipo_var.get()
+            # Normaliza tipo
+            tipo_map = {
+                "App Web (HTML)": "html",
+                "Apresentacao PowerPoint (.pptx)": "powerpoint",
+                "Planilha Excel (.xlsx)": "excel",
+                "Documento Word (.docx)": "word",
+                "Landing Page": "landing",
+                "Dashboard Web": "dashboard",
+                "CRM / Sistema de Clientes": "crm",
+                "Calculadora / Simulador": "calculadora",
+            }
+            tipo_norm = tipo_map.get(tipo_selecionado, "html")
+
+            publico = publico_entry.get().strip()
+            funcionalidades = func_entry.get("1.0", "end").strip()
+            estilo = estilo_var.get()
+            extras = extras_entry.get().strip()
+
+            win.destroy()
+
+            # Mostra mensagem no chat explicando o plano
+            resumo = (
+                f"Criando: {tipo_selecionado}\n"
+                f"Descricao: {descricao}\n"
+                f"Publico: {publico or 'geral'}\n"
+                f"Funcionalidades: {funcionalidades or 'padrao'}\n"
+                f"Estilo: {estilo}"
+            )
+            self._msg("VOCE", f"[CRIAR APP]\n{resumo}", "user")
+            self._msg("WILLIAM", f"Entendido! Planejando e criando {tipo_selecionado}...\nIsso pode levar alguns segundos enquanto a IA gera o conteudo.", "system")
+
+            # Executa a criacao em thread separada
+            import threading
+
+            def executar_criacao():
+                try:
+                    self.is_processing = True
+                    self.window.after(0, lambda: self.send_btn.configure(state="disabled", text="..."))
+                    self.window.after(0, lambda: self.processing_label.configure(text="[ IA CRIANDO ARQUIVO... ]"))
+                    self.window.after(0, lambda: self.footer_right.configure(
+                        text="BUSY  ", text_color=COLORS["neon_orange"]))
+
+                    from src.skills.business.vscode_skill import VsCodeSkill
+                    skill = VsCodeSkill()
+                    params = {
+                        "planned": True,
+                        "tipo": tipo_norm,
+                        "descricao": descricao,
+                        "publico": publico,
+                        "funcionalidades": funcionalidades,
+                        "estilo": estilo,
+                        "extras": extras,
+                    }
+                    result = skill.execute("criar arquivo planejado", params=params)
+
+                    if result.success:
+                        self.window.after(0, lambda r=result.message:
+                                          self._msg("WILLIAM", r, "action"))
+                    else:
+                        self.window.after(0, lambda r=result.message:
+                                          self._msg("SYSTEM", f"Erro: {r}", "error"))
+
+                except Exception as e:
+                    self.window.after(0, lambda: self._msg("SYSTEM", f"Erro ao criar: {e}", "error"))
+                    log.error(f"Erro criacao planejada: {e}", exc_info=True)
+                finally:
+                    self.is_processing = False
+                    self.window.after(0, lambda: self.send_btn.configure(state="normal", text="EXEC"))
+                    self.window.after(0, lambda: self.processing_label.configure(text=""))
+                    self.window.after(0, lambda: self.footer_right.configure(
+                        text="READY  ", text_color=COLORS["neon_green"]))
+                    self.window.after(500, self._refresh_panel)
+
+            threading.Thread(target=executar_criacao, daemon=True).start()
+
+        ctk.CTkButton(btn_frame, text="CANCELAR", command=cancelar,
+                       font=ctk.CTkFont(family="Consolas", size=11, weight="bold"),
+                       fg_color="transparent", border_color=COLORS["text_secondary"],
+                       border_width=1, text_color=COLORS["text_secondary"],
+                       width=100, height=36, corner_radius=4).pack(side="left", padx=10, pady=8)
+
+        ctk.CTkButton(btn_frame, text="⚡ CRIAR AGORA COM IA", command=criar,
+                       font=ctk.CTkFont(family="Consolas", size=12, weight="bold"),
+                       fg_color=COLORS["neon_blue"], hover_color=COLORS["neon_purple"],
+                       text_color=COLORS["bg_dark"],
+                       width=220, height=36, corner_radius=4).pack(side="right", padx=10, pady=8)
 
     # ================================================================
     # ATTACHMENT - Anexar qualquer arquivo no chat
