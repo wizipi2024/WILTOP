@@ -10,9 +10,9 @@ from pathlib import Path
 from typing import List, Dict, Optional
 from dotenv import load_dotenv
 
-# Carrega variáveis de ambiente do arquivo .env
+# Carrega variáveis de ambiente do arquivo .env (override=True garante que sempre usa o .env atual)
 BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv(BASE_DIR / ".env")
+load_dotenv(BASE_DIR / ".env", override=True)
 
 
 class Settings:
