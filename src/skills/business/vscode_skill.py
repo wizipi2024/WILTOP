@@ -221,9 +221,9 @@ Retorne APENAS o JSON, sem explicacoes."""
         )
 
     def _montar_pptx(self, arquivo: Path, estrutura: dict):
-        """Monta o arquivo .pptx usando python-pptx."""
+        """Monta o arquivo .pptx usando python-pptx com design profissional."""
         from pptx import Presentation
-        from pptx.util import Inches, Pt
+        from pptx.util import Inches, Pt, Emu
         from pptx.dml.color import RGBColor
         from pptx.enum.text import PP_ALIGN
 
@@ -231,24 +231,39 @@ Retorne APENAS o JSON, sem explicacoes."""
         prs.slide_width = Inches(13.33)
         prs.slide_height = Inches(7.5)
 
-        AZUL       = RGBColor(0x1E, 0x3A, 0x8A)
-        AZUL_CLARO = RGBColor(0x3B, 0x82, 0xF6)
-        BRANCO     = RGBColor(0xFF, 0xFF, 0xFF)
-        CINZA      = RGBColor(0x64, 0x74, 0x8B)
-        ESCURO     = RGBColor(0x0F, 0x17, 0x2A)
-        ESCURO2    = RGBColor(0x16, 0x19, 0x21)
+        # Paleta de cores
+        AZUL        = RGBColor(0x1E, 0x3A, 0x8A)
+        AZUL_CLARO  = RGBColor(0x3B, 0x82, 0xF6)
+        AZUL_BRILHO = RGBColor(0x60, 0xA5, 0xFA)
+        VERDE       = RGBColor(0x22, 0xC5, 0x5E)
+        AMARELO     = RGBColor(0xF5, 0x9E, 0x0B)
+        BRANCO      = RGBColor(0xFF, 0xFF, 0xFF)
+        CINZA       = RGBColor(0x64, 0x74, 0x8B)
+        CINZA_CLARO = RGBColor(0x94, 0xA3, 0xB8)
+        ESCURO      = RGBColor(0x0F, 0x17, 0x2A)
+        ESCURO2     = RGBColor(0x16, 0x19, 0x21)
+        ESCURO3     = RGBColor(0x1C, 0x1F, 0x2B)
 
         def add_bg(slide, cor):
-            bg = slide.background
-            fill = bg.fill
+            fill = slide.background.fill
             fill.solid()
             fill.fore_color.rgb = cor
 
+        def add_rect(slide, left, top, width, height, cor, line=False):
+            s = slide.shapes.add_shape(1,
+                Inches(left), Inches(top), Inches(width), Inches(height))
+            s.fill.solid()
+            s.fill.fore_color.rgb = cor
+            if line:
+                s.line.color.rgb = cor
+            else:
+                s.line.fill.background()
+            return s
+
         def add_box(slide, text, left, top, width, height,
-                    bold=False, size=24, color=BRANCO, align=PP_ALIGN.LEFT):
+                    bold=False, size=24, color=BRANCO, align=PP_ALIGN.LEFT, italic=False):
             txBox = slide.shapes.add_textbox(
-                Inches(left), Inches(top), Inches(width), Inches(height)
-            )
+                Inches(left), Inches(top), Inches(width), Inches(height))
             tf = txBox.text_frame
             tf.word_wrap = True
             p = tf.paragraphs[0]
@@ -256,11 +271,19 @@ Retorne APENAS o JSON, sem explicacoes."""
             run = p.add_run()
             run.text = text
             run.font.bold = bold
+            run.font.italic = italic
             run.font.size = Pt(size)
             run.font.color.rgb = color
             return txBox
 
+        def add_footer(slide, idx, total):
+            # Linha separadora + número
+            add_rect(slide, 0, 7.2, 13.33, 0.02, AZUL_CLARO)
+            add_box(slide, f"{idx:02d} / {total:02d}", 11.5, 7.2, 1.5, 0.3,
+                    size=10, color=CINZA, align=PP_ALIGN.RIGHT)
+
         slides_data = estrutura.get("slides", [])
+        total = len(slides_data)
 
         for i, slide_info in enumerate(slides_data):
             tipo = slide_info.get("tipo", "conteudo")
@@ -270,44 +293,85 @@ Retorne APENAS o JSON, sem explicacoes."""
             layout = prs.slide_layouts[6]  # blank
             slide = prs.slides.add_slide(layout)
 
+            # ── CAPA ──────────────────────────────────────────────────
             if tipo == "capa" or i == 0:
                 add_bg(slide, ESCURO)
-                # Linha destaque
-                linha = slide.shapes.add_shape(1, Inches(0), Inches(3.2), Inches(13.33), Pt(3))
-                linha.fill.solid()
-                linha.fill.fore_color.rgb = AZUL_CLARO
-                linha.line.fill.background()
+                # Bloco lateral esquerdo colorido
+                add_rect(slide, 0, 0, 0.5, 7.5, AZUL_CLARO)
+                # Linha horizontal central
+                add_rect(slide, 0.5, 3.35, 12.83, 0.04, AZUL_CLARO)
+                # Título grande
                 add_box(slide, estrutura.get("titulo", titulo_slide),
-                        0.8, 1.2, 11, 1.8, bold=True, size=44, color=BRANCO)
+                        1.0, 1.0, 11.5, 2.0, bold=True, size=46, color=BRANCO)
+                # Subtítulo
                 add_box(slide, estrutura.get("subtitulo", ""),
-                        0.8, 3.4, 9, 0.8, size=24, color=AZUL_CLARO)
-                add_box(slide, f"Slide {i+1} de {len(slides_data)}",
-                        10, 6.8, 3, 0.5, size=12, color=CINZA, align=PP_ALIGN.RIGHT)
+                        1.0, 3.6, 10.0, 1.0, size=22, color=AZUL_BRILHO, italic=True)
+                # Data / empresa
+                add_box(slide, datetime.now().strftime("%B %Y"),
+                        1.0, 6.6, 4.0, 0.6, size=13, color=CINZA)
+                add_footer(slide, i + 1, total)
+
+            # ── CONCLUSÃO ─────────────────────────────────────────────
+            elif tipo == "conclusao":
+                add_bg(slide, AZUL)
+                add_rect(slide, 0, 0, 0.5, 7.5, AZUL_BRILHO)
+                add_box(slide, titulo_slide,
+                        1.0, 0.5, 11.5, 1.0, bold=True, size=30, color=BRANCO)
+                add_rect(slide, 1.0, 1.5, 11.3, 0.04, BRANCO)
+                y = 1.8
+                for j, ponto in enumerate(pontos[:5]):
+                    add_rect(slide, 1.0, y + 0.15, 0.3, 0.3, AZUL_BRILHO)
+                    add_box(slide, ponto, 1.5, y, 11.0, 0.7,
+                            bold=False, size=20, color=BRANCO)
+                    y += 0.9
+                add_footer(slide, i + 1, total)
+
+            # ── DADOS (métricas) ──────────────────────────────────────
+            elif tipo == "dados":
+                add_bg(slide, ESCURO2)
+                add_rect(slide, 0, 0, 13.33, 1.2, ESCURO3)
+                add_box(slide, titulo_slide,
+                        0.5, 0.15, 12.0, 0.9, bold=True, size=26, color=BRANCO)
+                add_box(slide, f"{i+1:02d}", 12.0, 0.1, 1.0, 0.9,
+                        bold=True, size=30, color=AZUL_CLARO, align=PP_ALIGN.RIGHT)
+                # Cards de dados (distribui até 4 métricas em cards)
+                n = min(len(pontos), 4)
+                card_w = 11.0 / max(n, 1)
+                for j, ponto in enumerate(pontos[:4]):
+                    x = 1.1 + j * (card_w + 0.15)
+                    add_rect(slide, x, 1.5, card_w, 2.5, ESCURO3)
+                    add_box(slide, ponto, x + 0.15, 1.7, card_w - 0.3, 2.1,
+                            bold=False, size=18, color=CINZA_CLARO)
+                if len(pontos) > 4:
+                    add_box(slide, pontos[4], 1.1, 4.2, 11.0, 1.0, size=17, color=BRANCO)
+                add_footer(slide, i + 1, total)
+
+            # ── PADRÃO (lista) ────────────────────────────────────────
             else:
                 bg_cor = ESCURO if i % 2 == 0 else ESCURO2
                 add_bg(slide, bg_cor)
                 # Barra superior
-                barra = slide.shapes.add_shape(1, Inches(0), Inches(0), Inches(13.33), Inches(1.1))
-                barra.fill.solid()
-                barra.fill.fore_color.rgb = AZUL
-                barra.line.fill.background()
-                add_box(slide, titulo_slide, 0.4, 0.12, 12, 0.85, bold=True, size=26, color=BRANCO)
-                add_box(slide, f"{i+1:02d}", 11.8, 0.12, 1.2, 0.85, bold=True, size=28,
-                        color=AZUL_CLARO, align=PP_ALIGN.RIGHT)
+                add_rect(slide, 0, 0, 13.33, 1.15, AZUL)
+                # Acento vertical
+                add_rect(slide, 0, 0, 0.12, 1.15, AZUL_BRILHO)
+                add_box(slide, titulo_slide,
+                        0.4, 0.13, 12.0, 0.9, bold=True, size=26, color=BRANCO)
+                add_box(slide, f"{i+1:02d}", 11.8, 0.13, 1.2, 0.9,
+                        bold=True, size=28, color=AZUL_CLARO, align=PP_ALIGN.RIGHT)
 
-                y = 1.4
+                y = 1.45
                 for j, ponto in enumerate(pontos[:6]):
-                    # Marcador
-                    marc = slide.shapes.add_shape(1, Inches(0.5), Inches(y + 0.12), Inches(0.08), Inches(0.08))
-                    marc.fill.solid()
-                    marc.fill.fore_color.rgb = AZUL_CLARO
-                    marc.line.fill.background()
-                    add_box(slide, ponto, 0.8, y, 11.8, 0.75, bold=(j == 0), size=20, color=BRANCO)
-                    y += 0.9
+                    # Marcador colorido alternado
+                    marc_cor = AZUL_CLARO if j % 2 == 0 else VERDE
+                    add_rect(slide, 0.55, y + 0.18, 0.22, 0.22, marc_cor)
+                    add_box(slide, ponto, 0.95, y, 11.6, 0.78,
+                            bold=(j == 0), size=20 if j == 0 else 18, color=BRANCO)
+                    y += 0.88
 
                 nota = slide_info.get("nota", "")
                 if nota:
                     slide.notes_slide.notes_text_frame.text = nota
+                add_footer(slide, i + 1, total)
 
         prs.save(str(arquivo))
         log.info(f"PowerPoint salvo: {arquivo}")
@@ -663,18 +727,37 @@ Retorne APENAS o JSON, sem explicacoes."""
         pasta.mkdir(parents=True, exist_ok=True)
 
         prompt = (
-            "Voce e um desenvolvedor front-end expert em HTML, CSS e JavaScript.\n"
+            "Voce e um desenvolvedor front-end senior especialista em UI/UX moderno.\n"
             f"Com base nestas informacoes:\n{contexto}\n\n"
-            "Crie um app web COMPLETO, BONITO e FUNCIONAL.\n\n"
-            "REQUISITOS OBRIGATORIOS:\n"
-            "1. Design moderno dark theme (#0f1117, cards #161921, accent #3b82f6)\n"
-            "2. Totalmente funcional com JavaScript puro (sem frameworks externos)\n"
-            "3. Responsivo (mobile-first)\n"
-            "4. Interface REAL com funcionalidades especificas para este contexto\n"
-            "5. Pelo menos 3 secoes ou funcionalidades distintas\n"
-            "6. Dados de exemplo ESPECIFICOS (nao genericos)\n"
-            "7. localStorage para persistencia\n\n"
-            "Retorne APENAS o codigo HTML completo (doctype ate /html), sem explicacoes."
+            "Crie um app web PROFISSIONAL, BONITO e TOTALMENTE FUNCIONAL em UM UNICO arquivo HTML.\n\n"
+            "=== DESIGN OBRIGATORIO ===\n"
+            "- Dark theme premium: body background #0f1117, cards #161921, border #2d3748\n"
+            "- Accent azul vibrante: #3b82f6 (botoes, titulos, destaques)\n"
+            "- Verde sucesso: #22c55e | Amarelo aviso: #f59e0b | Vermelho erro: #ef4444\n"
+            "- Fonte: 'Segoe UI', system-ui, sans-serif\n"
+            "- Border radius: cards 12px, botoes 8px, inputs 6px\n"
+            "- Sombras sutis: box-shadow 0 4px 20px rgba(0,0,0,0.4)\n"
+            "- Transicoes suaves: transition all 0.2s ease em botoes e cards\n"
+            "- Hover nos botoes: brightness(1.1) e transform translateY(-1px)\n"
+            "- Sidebar ou header com gradiente e logo/icone emoji\n"
+            "- KPI cards com icones emoji grandes e valores coloridos\n\n"
+            "=== FUNCIONALIDADES OBRIGATORIAS ===\n"
+            "- JavaScript puro 100% funcional (ZERO frameworks externos, ZERO CDN)\n"
+            "- localStorage para persistir todos os dados\n"
+            "- Dados de exemplo REAIS e ESPECIFICOS para o contexto (nao genericos)\n"
+            "- Pelo menos 4 funcionalidades distintas\n"
+            "- Formularios com validacao visual\n"
+            "- Tabela ou lista com filtros/busca\n"
+            "- Dashboard com metricas/KPIs numericos reais do contexto\n"
+            "- Notificacoes/toasts visuais para acoes\n\n"
+            "=== RESTRICOES ABSOLUTAS ===\n"
+            "- PROIBIDO referenciar arquivos externos (style.css, script.js, imagens, CDN)\n"
+            "- TODO o CSS deve estar dentro de <style> no <head>\n"
+            "- TODO o JS deve estar dentro de <script> no final do <body>\n"
+            "- PROIBIDO usar frameworks: React, Vue, Angular, Bootstrap, Tailwind, jQuery\n"
+            "- O arquivo deve funcionar 100% sem internet, sem servidor\n\n"
+            "Retorne APENAS o codigo HTML completo comecando com <!DOCTYPE html> e terminando com </html>.\n"
+            "Nenhuma explicacao, nenhum markdown, APENAS o HTML."
         )
 
         html_gerado = ""
@@ -686,11 +769,18 @@ Retorne APENAS o JSON, sem explicacoes."""
                 inicio = resposta.upper().find("<!DOCTYPE")
                 fim = resposta.rfind("</html>")
                 if fim > inicio:
-                    html_gerado = resposta[inicio:fim + 7]
+                    candidato = resposta[inicio:fim + 7]
+                    # Rejeita se referenciar arquivos externos (estilo nao embutido)
+                    if '<link rel="stylesheet"' not in candidato.lower() and \
+                       "src=\"script.js\"" not in candidato.lower() and \
+                       "src='script.js'" not in candidato.lower():
+                        html_gerado = candidato
+                    else:
+                        log.warning("IA gerou HTML com referencias externas — usando fallback")
         except Exception as e:
             log.warning(f"IA nao disponivel: {e}")
 
-        if not html_gerado or len(html_gerado) < 200:
+        if not html_gerado or len(html_gerado) < 500:
             html_gerado = self._html_fallback(descricao)
 
         (pasta / "index.html").write_text(html_gerado, encoding="utf-8")
@@ -719,122 +809,25 @@ Retorne APENAS o JSON, sem explicacoes."""
 
     def _criar_landing_page(self, command: str) -> SkillResult:
         desc = self._extrair_descricao(command)
-        nome_projeto = f"landing_{desc.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M')}"
-        pasta = APPS_DIR / nome_projeto
-        pasta.mkdir(parents=True, exist_ok=True)
-
-        html = f"""<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{desc.title()} - Solucao Profissional</title>
-    <style>
-        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
-        body {{ font-family: 'Segoe UI', sans-serif; background: #0f1117; color: #f1f5f9; }}
-        .hero {{ min-height: 100vh; display: flex; align-items: center; justify-content: center;
-                 background: linear-gradient(135deg, #1e3a5f 0%, #0f1117 100%); text-align: center; padding: 40px; }}
-        .hero h1 {{ font-size: 3rem; font-weight: 700; color: #3b82f6; margin-bottom: 20px; }}
-        .hero p {{ font-size: 1.3rem; color: #94a3b8; max-width: 600px; margin: 0 auto 40px; }}
-        .cta-btn {{ background: #3b82f6; color: white; padding: 18px 40px; border: none;
-                   border-radius: 8px; font-size: 1.1rem; cursor: pointer; font-weight: 600; }}
-        .form-section {{ background: #161921; padding: 60px 20px; text-align: center; }}
-        .form {{ max-width: 500px; margin: 0 auto; }}
-        .form input {{ width: 100%; padding: 14px; margin: 10px 0; border-radius: 6px;
-                       border: 1px solid #2d3748; background: #1c1f2b; color: #f1f5f9; }}
-        .form button {{ width: 100%; padding: 16px; background: #22c55e; color: white;
-                       border: none; border-radius: 6px; font-size: 1.1rem; font-weight: 600; cursor: pointer; }}
-        .benefits {{ background: #0f1117; padding: 60px 20px; }}
-        .benefits-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                          gap: 30px; max-width: 1000px; margin: 0 auto; }}
-        .benefit {{ background: #161921; padding: 30px; border-radius: 10px; }}
-        .benefit h3 {{ color: #3b82f6; margin-bottom: 10px; }}
-    </style>
-</head>
-<body>
-    <section class="hero">
-        <div>
-            <h1>Solucao Profissional para {desc.title()}</h1>
-            <p>Automatize, escale e gere mais resultado. Sem complicacao.</p>
-            <button class="cta-btn" onclick="document.querySelector('.form-section').scrollIntoView()">
-                Quero Comecar Agora
-            </button>
-        </div>
-    </section>
-    <section class="form-section">
-        <h2>Receba Consultoria Gratuita</h2>
-        <form class="form" id="leadForm">
-            <input type="text" placeholder="Seu nome completo" required>
-            <input type="tel" placeholder="WhatsApp (com DDD)" required>
-            <input type="email" placeholder="Seu melhor email" required>
-            <button type="submit">QUERO COMECAR AGORA</button>
-        </form>
-    </section>
-    <section class="benefits">
-        <div class="benefits-grid">
-            <div class="benefit"><h3>Resultado Rapido</h3><p>Primeiros resultados em 30 dias.</p></div>
-            <div class="benefit"><h3>Sem Complicacao</h3><p>Cuidamos de tudo para voce.</p></div>
-            <div class="benefit"><h3>Suporte Continuo</h3><p>Equipe via WhatsApp sempre disponivel.</p></div>
-        </div>
-    </section>
-    <script>
-        document.getElementById('leadForm').addEventListener('submit', function(e) {{
-            e.preventDefault();
-            alert('Obrigado! Entraremos em contato em breve!');
-        }});
-    </script>
-</body>
-</html>"""
-        (pasta / "index.html").write_text(html, encoding="utf-8")
-        self._abrir_vscode(pasta)
-        try:
-            import webbrowser
-            webbrowser.open(str(pasta / "index.html"))
-        except Exception:
-            pass
-        return SkillResult(success=True,
-                           message=f"[LANDING PAGE] {desc.title()}\nArquivo: {pasta}/index.html\nAberta no navegador!",
-                           data={"pasta": str(pasta)})
+        contexto = (
+            f"Tipo: Landing Page de Captura de Leads\n"
+            f"Descricao: {desc}\n"
+            f"Objetivo: Capturar nome, WhatsApp e email do visitante\n"
+            f"Estilo: Moderno, persuasivo, profissional\n"
+            f"Publico: Empresas e profissionais brasileiros"
+        )
+        return self._criar_app_html_planejado(f"landing_{desc}", contexto)
 
     def _criar_dashboard(self, command: str) -> SkillResult:
         desc = self._extrair_descricao(command)
-        pasta = APPS_DIR / f"dashboard_{desc.replace(' ', '_')}"
-        pasta.mkdir(parents=True, exist_ok=True)
-        html = (
-            f"<!DOCTYPE html><html lang='pt-BR'><head><meta charset='UTF-8'>"
-            f"<title>Dashboard {desc.title()}</title>"
-            f"<style>body{{font-family:'Segoe UI',sans-serif;background:#0f1117;color:#f1f5f9;margin:0}}"
-            f".header{{background:#161921;padding:20px 30px}}.header h1{{color:#3b82f6}}"
-            f".kpis{{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;padding:30px}}"
-            f".kpi{{background:#161921;padding:25px;border-radius:10px;text-align:center}}"
-            f".kpi .v{{font-size:2.5rem;font-weight:700;color:#3b82f6}}"
-            f".kpi .l{{color:#94a3b8}}.kpi .d{{color:#22c55e}}"
-            f".table-wrap{{margin:0 30px 30px;background:#161921;border-radius:10px;overflow:hidden}}"
-            f"table{{width:100%;border-collapse:collapse}}th{{background:#1c1f2b;padding:15px;text-align:left;color:#94a3b8}}"
-            f"td{{padding:15px;border-top:1px solid #2d3748}}</style></head><body>"
-            f"<div class='header'><h1>Dashboard {desc.title()}</h1></div>"
-            f"<div class='kpis'>"
-            f"<div class='kpi'><div class='v'>47</div><div class='l'>Total Leads</div><div class='d'>+12 hoje</div></div>"
-            f"<div class='kpi'><div class='v'>8.3%</div><div class='l'>Conversao</div><div class='d'>+1.2%</div></div>"
-            f"<div class='kpi'><div class='v'>R$6.2k</div><div class='l'>Receita</div><div class='d'>+R$800</div></div>"
-            f"<div class='kpi'><div class='v'>4</div><div class='l'>Clientes</div><div class='d'>+1 mes</div></div>"
-            f"</div><div class='table-wrap'><table>"
-            f"<tr><th>Lead</th><th>Empresa</th><th>Score</th><th>Status</th></tr>"
-            f"<tr><td>Ana Costa</td><td>Clinica Sorrir</td><td>95</td><td style='color:#22c55e'>HOT</td></tr>"
-            f"<tr><td>Carlos Lima</td><td>Odonto Premium</td><td>82</td><td style='color:#22c55e'>HOT</td></tr>"
-            f"<tr><td>Maria Santos</td><td>DentMax</td><td>67</td><td style='color:#f59e0b'>WARM</td></tr>"
-            f"</table></div></body></html>"
+        contexto = (
+            f"Tipo: Dashboard de Analytics/Metricas\n"
+            f"Descricao: {desc}\n"
+            f"Objetivo: Exibir KPIs, graficos de barras (CSS puro), tabela de dados com filtros\n"
+            f"Estilo: Dark theme profissional, dados interativos\n"
+            f"Extras: Graficos de barra em CSS puro, filtros de data, exportar dados"
         )
-        (pasta / "index.html").write_text(html, encoding="utf-8")
-        self._abrir_vscode(pasta)
-        try:
-            import webbrowser
-            webbrowser.open(str(pasta / "index.html"))
-        except Exception:
-            pass
-        return SkillResult(success=True,
-                           message=f"[DASHBOARD] {desc.title()}\nArquivo: {pasta}/index.html",
-                           data={"pasta": str(pasta)})
+        return self._criar_app_html_planejado(f"dashboard_{desc}", contexto)
 
     def _criar_calculadora(self, command: str) -> SkillResult:
         desc = self._extrair_descricao(command)
