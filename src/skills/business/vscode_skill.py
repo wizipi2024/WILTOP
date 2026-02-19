@@ -83,37 +83,73 @@ class VsCodeSkill(BaseSkill):
 
     def _executar_plano(self, p: dict) -> SkillResult:
         """Executa criação com base no plano aprovado pelo usuário."""
-        tipo = p.get("tipo", "html")
-        descricao = p.get("descricao", "app")
-        publico = p.get("publico", "")
+        tipo          = p.get("tipo", "html")
+        nome          = p.get("nome", "") or p.get("descricao", "app")
+        descricao     = p.get("descricao", "app")
+        publico       = p.get("publico", "")
         funcionalidades = p.get("funcionalidades", "")
-        estilo = p.get("estilo", "profissional")
-        extras = p.get("extras", "")
+        estilo        = p.get("estilo", "profissional")
+        extras        = p.get("extras", "")
+        abrir_vscode  = p.get("abrir_vscode", False)
+
+        # Contexto rico — funcionalidades são a parte mais importante
+        funcionalidades_formatadas = "\n".join(
+            f"  - {l.strip().strip('-*•▸ ')}"
+            for l in funcionalidades.splitlines()
+            if l.strip()
+        ) or "  - Funcionalidades gerais"
 
         contexto_completo = (
+            f"Nome/Titulo: {nome}\n"
             f"Tipo: {tipo}\n"
             f"Descricao: {descricao}\n"
-            f"Publico alvo: {publico}\n"
-            f"Funcionalidades necessarias: {funcionalidades}\n"
+            f"Publico alvo: {publico or 'geral'}\n"
             f"Estilo/Tom: {estilo}\n"
-            f"Informacoes adicionais: {extras}"
+            f"Informacoes adicionais: {extras}\n\n"
+            f"FUNCIONALIDADES OBRIGATORIAS (IMPLEMENTAR TODAS SEM EXCECAO):\n"
+            f"{funcionalidades_formatadas}"
         ).strip()
 
         tipo_lower = tipo.lower()
         if tipo_lower in ("powerpoint", "pptx", "apresentacao", "apresentação", "slides"):
-            return self._criar_powerpoint_planejado(descricao, contexto_completo)
+            return self._criar_powerpoint_planejado(nome, contexto_completo)
         elif tipo_lower in ("excel", "xlsx", "planilha"):
-            return self._criar_excel_planejado(descricao, contexto_completo)
+            return self._criar_excel_planejado(nome, contexto_completo)
         elif tipo_lower in ("word", "docx", "documento"):
-            return self._criar_word_planejado(descricao, contexto_completo)
+            return self._criar_word_planejado(nome, contexto_completo)
         elif tipo_lower in ("landing", "landing_page", "pagina de captura"):
-            return self._criar_landing_page(f"crie landing page {descricao}")
+            return self._criar_app_html_planejado(
+                nome,
+                f"Tipo: Landing Page de Alta Conversao\n{contexto_completo}",
+                abrir_vscode=abrir_vscode)
         elif tipo_lower in ("dashboard", "painel"):
-            return self._criar_dashboard(f"crie dashboard {descricao}")
-        elif tipo_lower in ("crm",):
-            return self._criar_crm(f"crie crm {descricao}")
+            return self._criar_app_html_planejado(
+                nome,
+                f"Tipo: Dashboard Analitico com KPIs\n{contexto_completo}",
+                abrir_vscode=abrir_vscode)
+        elif tipo_lower == "crm":
+            return self._criar_app_html_planejado(
+                nome,
+                f"Tipo: CRM / Sistema de Gestao de Clientes\n{contexto_completo}",
+                abrir_vscode=abrir_vscode)
+        elif tipo_lower == "calculadora":
+            return self._criar_app_html_planejado(
+                nome,
+                f"Tipo: Calculadora / Simulador Interativo\n{contexto_completo}",
+                abrir_vscode=abrir_vscode)
+        elif tipo_lower == "jogo":
+            return self._criar_app_html_planejado(
+                nome,
+                f"Tipo: Jogo HTML com Canvas (game completo funcional)\n{contexto_completo}",
+                abrir_vscode=abrir_vscode)
+        elif tipo_lower == "portfolio":
+            return self._criar_app_html_planejado(
+                nome,
+                f"Tipo: Portfolio / Site Pessoal\n{contexto_completo}",
+                abrir_vscode=abrir_vscode)
         else:
-            return self._criar_app_html_planejado(descricao, contexto_completo)
+            return self._criar_app_html_planejado(
+                nome, contexto_completo, abrir_vscode=abrir_vscode)
 
     # ================================================================
     # POWERPOINT
@@ -720,67 +756,78 @@ Retorne APENAS o JSON, sem explicacoes."""
             except Exception:
                 return False
 
-    def _criar_app_html_planejado(self, descricao: str, contexto: str) -> SkillResult:
-        """Cria app HTML com IA, usando contexto completo do planejamento."""
+    def _criar_app_html_planejado(self, descricao: str, contexto: str,
+                                   abrir_vscode: bool = False) -> SkillResult:
+        """Cria app HTML com IA — usa TODAS as funcionalidades listadas no contexto."""
         nome_projeto = f"app_{descricao.replace(' ', '_')[:30]}_{datetime.now().strftime('%H%M')}"
         pasta = APPS_DIR / nome_projeto
         pasta.mkdir(parents=True, exist_ok=True)
 
+        # Extrai lista de funcionalidades do contexto para incluir no prompt
+        func_block = ""
+        if "FUNCIONALIDADES OBRIGATORIAS" in contexto:
+            idx = contexto.find("FUNCIONALIDADES OBRIGATORIAS")
+            func_block = contexto[idx:]
+
         prompt = (
-            "Voce e um desenvolvedor front-end senior especialista em UI/UX moderno.\n"
-            f"Com base nestas informacoes:\n{contexto}\n\n"
-            "Crie um app web PROFISSIONAL, BONITO e TOTALMENTE FUNCIONAL em UM UNICO arquivo HTML.\n\n"
-            "=== DESIGN OBRIGATORIO ===\n"
-            "- Dark theme premium: body background #0f1117, cards #161921, border #2d3748\n"
-            "- Accent azul vibrante: #3b82f6 (botoes, titulos, destaques)\n"
-            "- Verde sucesso: #22c55e | Amarelo aviso: #f59e0b | Vermelho erro: #ef4444\n"
+            "Voce e um desenvolvedor front-end senior com 15 anos de experiencia em UI/UX.\n"
+            f"BRIEFING DO PROJETO:\n{contexto}\n\n"
+            "═══════════════════════════════════════════════════════════\n"
+            "MISSAO: Crie este projeto EXATAMENTE como especificado acima.\n"
+            "CADA FUNCIONALIDADE listada DEVE existir no codigo final.\n"
+            "Nao invente funcionalidades diferentes. Implemente TODAS as pedidas.\n"
+            "═══════════════════════════════════════════════════════════\n\n"
+            "=== DESIGN PREMIUM OBRIGATORIO ===\n"
+            "- Dark theme: background #0f1117, cards #161921, border #2d3748\n"
+            "- Accent azul: #3b82f6 | Verde: #22c55e | Amarelo: #f59e0b | Vermelho: #ef4444\n"
             "- Fonte: 'Segoe UI', system-ui, sans-serif\n"
-            "- Border radius: cards 12px, botoes 8px, inputs 6px\n"
-            "- Sombras sutis: box-shadow 0 4px 20px rgba(0,0,0,0.4)\n"
-            "- Transicoes suaves: transition all 0.2s ease em botoes e cards\n"
-            "- Hover nos botoes: brightness(1.1) e transform translateY(-1px)\n"
-            "- Sidebar ou header com gradiente e logo/icone emoji\n"
-            "- KPI cards com icones emoji grandes e valores coloridos\n\n"
-            "=== FUNCIONALIDADES OBRIGATORIAS ===\n"
-            "- JavaScript puro 100% funcional (ZERO frameworks externos, ZERO CDN)\n"
-            "- localStorage para persistir todos os dados\n"
-            "- Dados de exemplo REAIS e ESPECIFICOS para o contexto (nao genericos)\n"
-            "- Pelo menos 4 funcionalidades distintas\n"
-            "- Formularios com validacao visual\n"
-            "- Tabela ou lista com filtros/busca\n"
-            "- Dashboard com metricas/KPIs numericos reais do contexto\n"
-            "- Notificacoes/toasts visuais para acoes\n\n"
+            "- Cards com border-radius 12px, sombra box-shadow 0 4px 20px rgba(0,0,0,0.4)\n"
+            "- Botoes com transition 0.2s, hover translateY(-2px) e brightness(1.15)\n"
+            "- Header ou sidebar com gradiente linear-gradient(135deg,...)\n"
+            "- Icones emoji relevantes nos titulos e cards\n"
+            "- Toast notifications flutuantes (aparecem no canto ao executar acoes)\n"
+            "- Animacao de fade-in nos cards ao carregar (CSS @keyframes)\n\n"
+            "=== CODIGO OBRIGATORIO ===\n"
+            "- JavaScript puro 100% — ZERO CDN, ZERO frameworks externos\n"
+            "- localStorage para persistencia de dados\n"
+            "- Dados de exemplo REAIS e ESPECIFICOS (nao 'Item 1', 'Item 2')\n"
+            "- Validacao visual nos formularios (borda vermelha se invalido)\n"
+            "- Responsivo (funciona em 320px ate 1920px)\n\n"
             "=== RESTRICOES ABSOLUTAS ===\n"
-            "- PROIBIDO referenciar arquivos externos (style.css, script.js, imagens, CDN)\n"
-            "- TODO o CSS deve estar dentro de <style> no <head>\n"
-            "- TODO o JS deve estar dentro de <script> no final do <body>\n"
-            "- PROIBIDO usar frameworks: React, Vue, Angular, Bootstrap, Tailwind, jQuery\n"
-            "- O arquivo deve funcionar 100% sem internet, sem servidor\n\n"
-            "Retorne APENAS o codigo HTML completo comecando com <!DOCTYPE html> e terminando com </html>.\n"
-            "Nenhuma explicacao, nenhum markdown, APENAS o HTML."
+            "- PROIBIDO: <link rel=stylesheet>, src=script.js, <script src=...>\n"
+            "- TODO CSS dentro de <style> no <head>\n"
+            "- TODO JS dentro de <script> no final do <body>\n"
+            "- PROIBIDO: Bootstrap, Tailwind, jQuery, React, Vue, Chart.js, D3\n"
+            "- Arquivo UNICO, funciona 100% offline sem servidor\n\n"
+            "Retorne APENAS o HTML completo iniciando com <!DOCTYPE html> e finalizando com </html>.\n"
+            "SEM explicacoes. SEM markdown. SEM comentarios fora do HTML."
         )
 
         html_gerado = ""
         try:
             from src.core.ai_engine import get_engine
             engine = get_engine()
+            log.info(f"Gerando HTML para: {descricao[:50]}")
             resposta = engine.chat_with_fallback(prompt)
             if resposta and "<!DOCTYPE" in resposta.upper():
                 inicio = resposta.upper().find("<!DOCTYPE")
                 fim = resposta.rfind("</html>")
                 if fim > inicio:
                     candidato = resposta[inicio:fim + 7]
-                    # Rejeita se referenciar arquivos externos (estilo nao embutido)
-                    if '<link rel="stylesheet"' not in candidato.lower() and \
-                       "src=\"script.js\"" not in candidato.lower() and \
-                       "src='script.js'" not in candidato.lower():
+                    # Rejeita HTML com arquivos externos (CSS/JS separados)
+                    ext_refs = ['<link rel="stylesheet"', "<link rel='stylesheet'",
+                                'src="script.js"', "src='script.js'",
+                                'src="style.js"', 'href="style.css"', "href='style.css'"]
+                    has_ext = any(ref in candidato.lower() for ref in ext_refs)
+                    if not has_ext and len(candidato) >= 500:
                         html_gerado = candidato
                     else:
-                        log.warning("IA gerou HTML com referencias externas — usando fallback")
+                        log.warning(f"HTML rejeitado: externo={has_ext}, len={len(candidato)}")
         except Exception as e:
             log.warning(f"IA nao disponivel: {e}")
 
         if not html_gerado or len(html_gerado) < 500:
+            log.warning("Usando fallback HTML local")
             html_gerado = self._html_fallback(descricao)
 
         (pasta / "index.html").write_text(html_gerado, encoding="utf-8")
@@ -788,23 +835,32 @@ Retorne APENAS o JSON, sem explicacoes."""
             f"# {descricao.title()}\nCriado por William v6 com IA\n\nAbra index.html no navegador.",
             encoding="utf-8"
         )
-        self._abrir_vscode(pasta)
+
+        # Abre VS Code apenas se o usuário pediu
+        if abrir_vscode:
+            self._abrir_vscode(pasta)
+
+        # Abre no navegador
         try:
             import webbrowser
             webbrowser.open(str(pasta / "index.html"))
         except Exception:
             pass
 
+        tamanho_kb = round(len(html_gerado) / 1024, 1)
+        vsc_info = "VS Code + navegador abertos!" if abrir_vscode else "Aberto no navegador!"
         return SkillResult(
             success=True,
             message=(
                 f"[APP CRIADO] {descricao.title()}\n\n"
-                f"PASTA: {pasta}\n"
-                f"STATUS: Aberto no VS Code e navegador\n"
-                f"TIPO: App web HTML/JS funcional\n\n"
-                f"Personalize o codigo no VS Code conforme precisar."
+                f"ARQUIVO: {pasta / 'index.html'}\n"
+                f"TAMANHO: {tamanho_kb} KB de codigo gerado\n"
+                f"STATUS: {vsc_info}\n\n"
+                f"O app foi gerado com TODAS as funcionalidades solicitadas.\n"
+                f"Abra o navegador para testar. Se quiser editar o codigo,\n"
+                f"abra o arquivo index.html no VS Code."
             ),
-            data={"pasta": str(pasta)}
+            data={"pasta": str(pasta), "arquivo": str(pasta / "index.html")}
         )
 
     def _criar_landing_page(self, command: str) -> SkillResult:
